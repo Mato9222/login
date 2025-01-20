@@ -119,7 +119,7 @@
                 recipientInput.value = tagValue; // 입력 필드로 값 이동
                 tag.remove(); // 기존 태그 삭제
             }
-        });zxczxc
+        });
     </script>
 </body>
 </html>
