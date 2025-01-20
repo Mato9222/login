@@ -1,0 +1,56 @@
+@charset "UTF-8";
+
+table.tb_chit {width: 800px; margin-top:1px; border-collapse: collapse !important; color: #000; background: #fff; font-size: 12px; border: 0; font-family: malgun gothic,dotum,arial,tahoma}
+table.tb_chit table {border-collapse: collapse !important}
+table.tb_chit tr td {padding: 3px; height: 20px; border: 1px solid #000; vertical-align: middle}
+table.tb_chit table.sign_member {border: 0}
+table.tb_chit table.sign_member tr td {border: 0; border-bottom: 1px solid #666}
+.doc_subject {height: 90px !important; font-size: 36px; font-weight: bold; text-align: center; vertical-align: middle; padding: 0; border: 0!important;}
+.tit {background: #ddd; text-align: center}
+.currency {text-align: right}
+
+<style type="text/css">
+  /* 1. Essential style : 반드시 적용되어야 하는 스타일입니다. 문서작성 시, Sample에서 제거불가 한 스타일 */
+    #divCustomWrapper { word-break: break-all; font-family: malgun gothic, dotum, arial, tahoma; font-size: 12px; width:800px !important; }
+    #divCustomWrapper * { max-width: 800px !important; }
+    /* (1) Section(제목, 결재선, 내용) */
+    #divCustomWrapper #titleSection,
+    #divCustomWrapper #draftSection,
+    #divCustomWrapper #detailSection { display: inline-block; width:800px !important; clear:both; margin-top: 20px; vertical-align: middle; }
+    #divCustomWrapper #titleSection { text-align: center; font-size: 25px; font-weight: bold; margin-bottom: 10px; }
+    #divCustomWrapper #detailSection > * { margin-bottom: 10px; }
+    /* (2) Table */
+    #divCustomWrapper table { border-collapse: collapse; }
+    #divCustomWrapper .detailSection table { width: 800px; }
+</style><style type="text/css">
+  /* 2. Option style : 용도에 따라 적용합니다.*/
+    /* (1) Table option : 2Type(subject / detail), Affacted elements(td), Range(divCustomWrapper 하단요소) */
+    #divCustomWrapper td.subjectColumn { border: 1px solid black; height:22px; padding: 3px 1px 3px 1px;/*top right bottom left*/ }
+    #divCustomWrapper td.detailColumn { border: 1px solid black; height:22px; padding: 3px 5px 3px 5px;/*top right bottom left*/ }
+    #divCustomWrapper td.detailColumn { text-align: left; }
+    #divCustomWrapper td.subjectColumn { background: rgb(221, 221, 221); font-weight: bold; text-align: center; vertical-align: middle; }
+    /* (2) Indent option : 2Type(one / two), Affcted elements(All) */
+    #divCustomWrapper .oneDepth { margin-left: 15px; }
+    #divCustomWrapper .twoDepth { margin-left: 37px; }
+    /* (3) Partition option : 2Type (left / right), Affacted elements(div), Range('partition'div영역 하단요소) */ 
+        /* 설명 : 좌,우로 분할되는 레이아웃 작성시 사용, 1라인에 1개 요소만 배치(줄바뀜 동반) */
+        /* 사용방법 : 분할할 영역에 partition CLASS를 적용 -> 분할배치하고자하는 하위요소에 'left, right' CLASS 적용 */
+    #divCustomWrapper div.partition .left { display: inline-block; clear: left; float: left; }
+    #divCustomWrapper div.partition .right { display: inline-block; clear: right; float: right; }
+    /* (4) In a row option : 2Type(left / right), Affacted elements(All), Range('inaRowRight or inRowLeft'div영역 하단요소 */
+        /* 설명 : 좌,우 끝에 정렬되는 레이아웃 작성 시 사용, 1라인에 여러개 요소 배치, Partition option과 조합(줄바뀜 없이 배치) */
+        /* 사용방법 : 나란히 정렬하고자 하는 요소들을, 'in a row'div 영역 내에 배치*/
+    #divCustomWrapper div.inaRowRight { text-align: right; }
+    #divCustomWrapper div.inaRowLeft { text-align: left;  }
+    #divCustomWrapper div.inaRowRight > *,
+    #divCustomWrapper div.inaRowLeft > * { display: inline-block; }
+</style><!-- Common style (Don't modify) --><!-- Print style (Don't modify) --><style type="text/css">
+@media print {
+#divCustomWrapper{ margin-left:auto !important; margin-right:auto !important; }
+#divCustomWrapper td { border:0px\9 !important; outline:black solid 0.5px\9  !important;}
+}
+</style><!-- Print style (Don't modify)--><!-- Custom style --><style>
+  /* 추가적인 스타일이 필요한 경우, 하단의 style에서 정의하여야 합니다. 상단의 Common style은 변경하지 않습니다. */
+#divCustomWrapper td.detailColumn.cen { text-align: center; }
+  /* (스타일이 중복되는 경우, 기본적으로 하단에 작성한 style이 우선적으로 적용됩니다.) */
+</style><!-- Custom style --></span><p style="font-family: &quot;맑은 고딕&quot;; font-size: 10pt; line-height: 20px; margin-top: 0px; margin-bottom: 0px;"><br></p></span>

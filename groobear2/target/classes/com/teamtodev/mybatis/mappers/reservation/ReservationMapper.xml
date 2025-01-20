@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.reservation.mapper.ReservationMapper">
+	<select id="selectReservation" resultType="ReservationVO" parameterType="ReservationVO">
+		   SELECT
+			    RESVE_CODE,
+			    RESVE_REQST_DE,
+			    RESVE_BEGIN_DE,
+			    RESVE_END_DE,
+			    EMPL_NO,
+			    RESRCE_NO,
+			    RESVE_BEGIN_TIME_NO,
+			    RESVE_PURPS,
+			    RESVE_CN,
+			    RESVE_STTUS_CODE,
+			    RESVE_END_TIME_NO
+			FROM
+			    RESERVATION
+			WHERE
+			    RESVE_CODE = #{resveCode}
+	</select>
+	<select id="selectReservationList" resultType="ReservationVO" parameterType="int">
+		SELECT 
+		    RES.RESVE_CODE,
+		    RES.RESVE_REQST_DE,
+		    RES.RESVE_BEGIN_DE,
+		    RES.RESVE_END_DE,
+		    RES.EMPL_NO,
+		    RES.RESRCE_NO,
+		    TT1.BEGIN_TIME,
+		    RES.RESVE_PURPS,
+		    RES.RESVE_CN,
+		    RES.RESVE_STTUS_CODE,
+		    TT2.END_TIME,
+		    RS.RESRCE_NM,
+		    RS.RESRCE_IEM_CODE
+		FROM 
+		    RESERVATION RES
+		LEFT JOIN 
+		    RESOURCES RS ON RES.RESRCE_NO = RS.RESRCE_NO
+		LEFT JOIN 
+		    TIME_TYPE TT1 ON RES.RESVE_BEGIN_TIME_NO = TT1.RESVE_TIME_NO
+		LEFT JOIN 
+		    TIME_TYPE TT2 ON RES.RESVE_END_TIME_NO = TT2.RESVE_TIME_NO
+		WHERE RES.EMPL_NO = #{emplNo}     
+		ORDER BY
+		   	RES.RESVE_CODE DESC
+	</select>
+	<insert id="insertReservation" parameterType="ReservationVO">
+				INSERT INTO RESERVATION (
+					    RESVE_CODE,
+					    RESVE_REQST_DE,
+					    RESVE_BEGIN_DE,
+					    RESVE_END_DE,
+					    EMPL_NO,
+					    RESRCE_NO,
+					    RESVE_BEGIN_TIME_NO,
+					    RESVE_END_TIME_NO,
+					    RESVE_PURPS,
+					    RESVE_CN,
+					    RESVE_STTUS_CODE
+																) 
+				VALUES (
+						 'RV' || TO_CHAR(SYSDATE,'YYMMDD') || LPAD(RESERVATION_SEQ.NEXTVAL,3,'0'),
+						 SYSDATE,
+						 #{resveBeginDe},
+						 #{resveEndDe},
+						 #{emplNo},
+						 #{resrceNo},
+						 #{resveBeginTimeNo},
+						 #{resveEndTimeNo},
+						 #{resvePurps},
+						 #{resveCn},
+						 'E02'
+						)
+	</insert>
+	
+	<update id="updateReservation" parameterType="ReservationVO">
+			UPDATE RESERVATION
+			       SET 
+			       		  RESVE_BEGIN_DE = #{resveBeginDe},
+					      RESVE_END_DE = #{resveEndDe},
+					      RESVE_BEGIN_TIME_NO = #{resveBeginTimeNo},
+					      RESVE_END_TIME_NO = #{resveEndTimeNo},
+					      RESVE_PURPS =  #{resvePurps},
+					      RESVE_CN = #{resveCn}
+			 WHERE RESVE_CODE = #{resveCode}
+	</update>
+	
+	<update id="deleteReservation" parameterType="String">
+			UPDATE RESERVATION
+			       SET RESVE_STTUS_CODE = 'E04'
+			 WHERE RESVE_CODE = #{resveCode}
+	</update>
+	
+	<update id="returnReservation" parameterType="String">
+			UPDATE RESERVATION
+			       SET RESVE_STTUS_CODE = 'E01'
+			 WHERE RESVE_CODE = #{resveCode}
+	</update>
+	
+	<select id="selectReserStartTimeList" resultType="ReservationVO" parameterType="ReservationVO">
+		SELECT
+		    RESVE_BEGIN_TIME_NO
+		FROM
+		    RESERVATION
+		WHERE
+		    RESVE_BEGIN_DE = #{resveBeginDe}
+		    AND   RESRCE_NO = #{resrceNo}
+		    AND RESVE_STTUS_CODE = 'E02'
+	</select>
+	
+	<select id="selectReserEndTimeList" resultType="ReservationVO" parameterType="ReservationVO">
+		SELECT
+		    RESVE_END_TIME_NO
+		FROM
+		    RESERVATION
+		WHERE
+		   RESVE_END_DE = #{resveEndDe}
+		   AND   RESRCE_NO = #{resrceNo}
+		   AND RESVE_STTUS_CODE = 'E02'
+	</select>
+</mapper>

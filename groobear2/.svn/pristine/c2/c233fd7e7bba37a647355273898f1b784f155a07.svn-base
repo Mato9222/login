@@ -1,0 +1,3 @@
+$("#attendBtn").on("click", function() {
+	
+})

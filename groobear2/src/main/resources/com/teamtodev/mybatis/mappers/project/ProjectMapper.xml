@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectMapper">
+	<resultMap type="ProjectVO" id="projectMap" autoMapping="true">
+		<id property="prjctCode" column="PRJCT_CODE"/>
+		<collection property="pjMemberVO" ofType="ProjectMemberVO">
+			<id property="prjctMbrNo" column="PRJCT_MBR_NO"/>
+				<result property="emplNo" column="EMPL_NO"/>
+				<result property="prjctMngrAt" column="PRJCT_MNGR_AT"/>
+				<result property="prjctRoleCode" column="PRJCT_ROLE_CODE"/>
+				<result property="prjctRoleCodeNm" column="PRJCT_ROLE_CODE_NM"/>
+			<association property="empVO" javaType="EmployeeVO" autoMapping="true">
+				<id property="emplNo" column="EMPL_NO"/>
+				<id property="rspofcCodeNm" column="RSPOFC_CODE_NM"/>
+				</association>
+			<association property="comVO" javaType="CommonVO" autoMapping="true">
+				<id property="cmmnCode" column="CMMN_CODE" />
+			</association>
+		</collection>
+	</resultMap>
+	<insert id="insertProject" parameterType="ProjectVO">
+		<selectKey order="BEFORE" resultType="String" keyProperty="prjctCode">
+			 SELECT 
+        		 'PJ' || TO_CHAR(SYSDATE,'YYMMDD') || LPAD(PROJECT_SEQ.NEXTVAL,3,'0') 
+        	
+        		FROM DUAL
+		</selectKey>
+		 INSERT INTO PROJECT (
+		    PRJCT_CODE,
+		    PRJCT_NM,
+		    PRJCT_DC,
+		    PRJCT_BGNDE,
+		    PRJCT_CLOS_ON
+		) VALUES (
+		    #{prjctCode},
+		    #{prjctNm},
+		    #{prjctDc},
+		    #{prjctBgnde},
+		    #{prjctClosOn}
+		)
+	</insert>
+	
+	<select id="selectProjectList" resultMap="projectMap">
+		SELECT
+			    A.PRJCT_CODE,
+			    A.PRJCT_NM,
+			    A.PRJCT_DC,
+			    A.PRJCT_BGNDE,
+			    A.PRJCT_CLOS_ON,
+			    A.PRJCT_STTUS_CODE,
+			    B.PRJCT_MBR_NO,
+			    B.EMPL_NO,
+			    B.PRJCT_CODE,
+			    B.PRJCT_MNGR_AT,
+			    B.PRJCT_ROLE_CODE,
+			    C.*
+			FROM
+			    PROJECT A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE
+			    A.PRJCT_CODE = B.PRJCT_CODE(+) AND B.EMPL_NO = C.EMPL_NO(+)
+			 ORDER BY
+			   A.PRJCT_CODE DESC
+	</select>
+	<select id="selectMyProject" resultMap="projectMap" parameterType="int">
+				SELECT
+			    A.PRJCT_CODE,
+			    A.PRJCT_NM,
+			    A.PRJCT_DC,
+			    A.PRJCT_BGNDE,
+			    A.PRJCT_CLOS_ON,
+			    A.PRJCT_STTUS_CODE,
+			    B.PRJCT_MBR_NO,
+			    B.EMPL_NO,
+			    B.PRJCT_CODE,
+			    B.PRJCT_MNGR_AT,
+			    B.PRJCT_ROLE_CODE,
+			    C.*
+			FROM
+			    PROJECT A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE
+			    A.PRJCT_CODE = B.PRJCT_CODE AND B.EMPL_NO = C.EMPL_NO
+                AND (A.PRJCT_CODE IN (SELECT
+                                        A.PRJCT_CODE
+                                        FROM PROJECT A, PROJECT_MEMBER B
+                                        WHERE  B.EMPL_NO = #{emplNo}
+                                        AND A.PRJCT_CODE = B.PRJCT_CODE))
+	</select>
+	<select id="selectDetailProject" resultMap="projectMap" parameterType="String">
+			SELECT
+			    A.PRJCT_CODE,      
+			    A.PRJCT_NM,        
+			    A.PRJCT_DC,        
+			    A.PRJCT_BGNDE,     
+			    A.PRJCT_CLOS_ON,   
+			    A.PRJCT_STTUS_CODE,
+			    B.PRJCT_MBR_NO,    
+			    B.EMPL_NO,         
+			    B.PRJCT_CODE,      
+			    B.PRJCT_MNGR_AT,   
+			    B.PRJCT_ROLE_CODE, 
+			    C.*,
+                D.CMMN_CODE_NM AS RSPOFC_CODE_NM,
+                E.CMMN_CODE_NM AS PRJCT_ROLE_CODE_NM
+			FROM
+			    PROJECT A
+			    JOIN PROJECT_MEMBER B ON A.PRJCT_CODE = B.PRJCT_CODE 
+			    JOIN EMPLOYEES C ON B.EMPL_NO = C.EMPL_NO
+                JOIN COMMON_CODE D ON C.RSPOFC_CODE = D.CMMN_CODE
+                JOIN COMMON_CODE E ON B.PRJCT_ROLE_CODE = E.CMMN_CODE
+			WHERE
+			    A.PRJCT_CODE = #{prjctCode}
+	</select>
+	<select id="countProjectCodeZ01" resultType="int">
+		SELECT
+		    COUNT(*)
+		FROM
+		    PROJECT
+		WHERE     PRJCT_STTUS_CODE = 'Z01'
+	</select>
+	<select id="countProjectCodeZ02" resultType="int">
+				SELECT
+		    		COUNT(*)
+			FROM
+			    PROJECT
+			WHERE     PRJCT_STTUS_CODE = 'Z02'
+	</select>
+	<select id="countProjectCodeZ03" resultType="int">
+			SELECT
+		    		COUNT(*)
+			FROM
+			    PROJECT
+			WHERE     PRJCT_STTUS_CODE = 'Z03'
+	</select>
+	<select id="countProjectCodeZ04" resultType="int">
+			SELECT
+		    		COUNT(*)
+			FROM
+			    PROJECT
+			WHERE     PRJCT_STTUS_CODE = 'Z04'
+	</select>
+</mapper>

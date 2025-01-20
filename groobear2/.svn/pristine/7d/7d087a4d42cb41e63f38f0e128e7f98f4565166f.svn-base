@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectWorkMapper">
+	<insert id="insertProjectWork" parameterType="ProjectWorkVO">
+		INSERT INTO WORKS (
+		    WORKS_NO,
+		    UP_WORKS_NO,
+		    WORKS_TITLE,
+		    WORKS_CON,
+		    PRJCT_MBR_NO,
+		    PRJCT_MBR_NO2,
+		    WORK_STTUS_CODE,
+		    BGNDE,
+		    CLOS_ON,
+		    WORKS_ORD,
+		    ATCH_FILE_NO,
+		    PROGRS_RT
+		) 
+		VALUES (
+		    LPAD(WORK_SEQ.NEXTVAL,8,'0'),
+		    #{upWorksNo},
+		    #{worksTitle},
+		    #{worksCon},
+		    #{prjctMbrNo},
+		    #{prjctMbrNo2},
+		    'G03',
+		    #{bgnde},
+		    #{closOn},
+		    #{worksOrd},
+		    1,
+		    0
+		)
+	</insert>
+	<select id="selectProjectWorkList" resultType="ProjectWorkVO" parameterType="String">
+    WITH PRJ_MEM_VIEW AS (
+    SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+    FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+)
+SELECT 
+    W.PRJCT_MBR_NO, 
+    V1.EMPL_NM AS EMPL_NM1, 
+    W.PRJCT_MBR_NO2, 
+    (SELECT EMPL_NM FROM PRJ_MEM_VIEW V2 WHERE W.PRJCT_MBR_NO2 = V2.PRJCT_MBR_NO) AS EMPL_NM2, 
+    W.*, 
+    V1.PRJCT_CODE 
+FROM 
+    WORKS W 
+INNER JOIN 
+    PRJ_MEM_VIEW V1 ON (W.PRJCT_MBR_NO = V1.PRJCT_MBR_NO) 
+WHERE 
+    V1.PRJCT_CODE = #{prjctCode} 
+ORDER BY 
+    WORKS_NO DESC
+	</select>
+	<select id="selectProjectWork" resultType="ProjectWorkVO" parameterType="ProjectWorkVO">
+		WITH PRJ_MEM_VIEW AS (
+			SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM
+			FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+			)
+			SELECT W.PRJCT_MBR_NO, V1.EMPL_NM AS EMPL_NM1, W.PRJCT_MBR_NO2,
+			(SELECT EMPL_NM FROM PRJ_MEM_VIEW  V2 WHERE W.PRJCT_MBR_NO2 = V2.PRJCT_MBR_NO)
+			AS EMPL_NM2, W.*
+			FROM WORKS W INNER JOIN PRJ_MEM_VIEW V1 ON (W.PRJCT_MBR_NO = V1.PRJCT_MBR_NO)
+			WHERE W.WORKS_NO = #{worksNo}
+	</select>
+</mapper>

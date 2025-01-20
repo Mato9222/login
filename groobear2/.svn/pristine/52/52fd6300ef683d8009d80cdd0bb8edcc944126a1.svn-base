@@ -1,0 +1,55 @@
+package com.teamtodev.attachfile.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.teamtodev.attachfile.vo.AttachVO;
+import com.teamtodev.board.vo.PostVO;
+import com.teamtodev.sanction.vo.SanctionDocVO;
+
+@Mapper
+public interface AttachMapper {
+	
+	/**
+	 * 게시판 - 첨부파일정보 DB 등록 메서드
+	 * @param attachFiles : 멀티파트파일 배열
+	 * @return DB등록한 갯수 반환
+	 */
+	public int insertAttach(PostVO postVO);
+	
+	
+	/**
+	 * 다운로드 카운트 증가
+	 * @param attachVO 통합첨부파일번호, 첨부파일순번 값 세팅해줄것
+	 * @return 성공 : 1, 실패 0
+	 */
+	public int incrementCount(AttachVO attachVO);
+	
+	
+	
+	/**
+	 * 전자결재 - 첨부파일정보 DB 등록 메서드
+	 * @param attachFiles : 멀티파트파일 배열
+	 * @return DB등록한 갯수 반환
+	 */
+	public int insertSantnAttach(@Param("sanctionDoc") SanctionDocVO scDocVO);
+	
+	/**
+	 * 단일 첨부파일 조회
+	 * @param attachVO 
+	 * @return 
+	 */
+	public AttachVO selectAttach(AttachVO attachVO);
+	
+	/**
+	 * 첨부파일 삭제를 위한 메소드
+	 */
+	public int deleteAttatch(@Param("atchNo") int atchNo);
+
+	/**
+	 * 특정 게시글의 첨부파일 전체 삭제
+	 */
+	public int deleteAttatches(@Param("sanctnDocNo") String scDocNo);
+}

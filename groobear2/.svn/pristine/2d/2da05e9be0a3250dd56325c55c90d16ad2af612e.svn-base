@@ -1,0 +1,108 @@
+package com.teamtodev.referencecenter.controller;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import org.apache.logging.log4j.core.appender.rolling.FileSize;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/refCenter")
+public class ReferenceCenterController {
+	
+	
+	// AppInfo.properties 파일의 refCenterFolder 경로 리소스로 사용
+	@Value("#{appInfo.refCenterFolder}")
+	private Resource refCenterFolder;
+	
+	
+	
+	/**
+	 * 자료실 목록 화면 이동
+	 * @return
+	 */
+	@GetMapping
+	public String retrieveReferenceCenter(Model model) {
+		
+		// 목록에 노출 시킬 \\192.168.142.3\groobear\refCenter\root 경로에 있는거 
+		try {
+			log.info("Resource 알아보기");
+						
+			//refCenterFolder.createRelative(null); // 만들때
+			
+			boolean exists = refCenterFolder.exists(); // exists : true
+			log.info("exists : {}", exists);
+			
+			String description = refCenterFolder.getDescription(); // description : URL [file://192.168.142.3/groobear/refCenter/root/]
+			log.info("description : {}", description);
+			
+			String path = refCenterFolder.getFile().getPath(); // path : \\192.168.142.3\groobear\refCenter\root
+			log.info("path : {}", path);
+			path = path.replace("\\", "/");
+			String[] pathArr = path.split("/");
+			log.info("des : {}", pathArr);
+			
+			log.info("파일명 리스트");
+			String[] list = refCenterFolder.getFile().list(); // 폴더 안의 모든 파일들 리스트로 받을 수 있음
+			for(String item : list) {
+				log.info("item : {}", item);
+			}
+			
+			
+			log.info("파일객체 리스트");
+			for(File item : refCenterFolder.getFile().listFiles()) { // 폴더 안의 모든 파일리스트에 대한 파일 객체을 받을 수 있음
+				log.info(item.getPath());
+				
+				Path path1 = item.toPath();
+				long size = Files.size(path1);
+				
+				// 폴더
+				if(item.isDirectory()) {
+					log.info("Folder : {} / 수정일 : {}", item.getName(), item.lastModified());
+				} else {
+					log.info("File : {} / 수정일 : {} / size : {}", item.getName(), item.lastModified(), size);
+				}
+			}
+			
+			String fileName = refCenterFolder.getFilename(); // fileName : 
+			log.info("fileName : {}", fileName);
+			
+//			refCenterFolder.getInputStream();
+//			refCenterFolder.getURI();
+//			refCenterFolder.getURL();
+			
+			boolean isFile = refCenterFolder.isFile(); // isFile : true
+			log.info("isFile : {}", isFile);
+			
+			boolean isOpen = refCenterFolder.isOpen(); // isOpen : false
+			log.info("isOpen : {}", isOpen);
+			
+			boolean isReadable = refCenterFolder.isReadable(); // isReadable : false
+			log.info("isReadable : {}", isReadable);
+			
+			long lastModified = refCenterFolder.lastModified(); // lastModified : 1717480525171
+			log.info("lastModified : {}", lastModified);
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return "referencecenter/refCenter";
+	}
+	
+	
+	
+	
+}

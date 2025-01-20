@@ -1,0 +1,13 @@
+package com.teamtodev.main.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface MainMapper {
+	
+	public int receMailCount(int emplNo);
+	
+	public int tempMailCount(int emplNo);
+	
+	
+}

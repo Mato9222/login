@@ -1,0 +1,180 @@
+@charset "UTF-8";
+
+.photo {
+	width: 32px !important;
+	height: 32px !important;
+	left: 24px;
+}
+
+.table td {
+	padding: 8px 8px;
+}
+
+.current  {
+	background: #e9f5f6;
+}
+
+.current-bar {
+	width: 4px;
+	background: #00a1b9;
+}
+
+.dragging {
+	background: #5A6A85;
+	border: 2px dashed #808080;
+}
+
+.disabled {
+	opacity: 0.5; /* 투명도 설정 */
+	background-color: #f2f2f2; /* 비활성화된 배경색 */
+	pointer-events: none; /* 이벤트 무시 */
+}
+
+text-gray {
+	color: #999;
+}
+
+div.approval_import {
+	position: relative;
+	min-height: 300px;
+	overflow: auto;
+}
+
+.sign_type1_inline {
+	position: relative;
+	display: inline-table !important;
+	border-collapse: separate;
+	border-spacing: 0;
+	white-space: normal;
+	font-size: 12px;
+	margin: 1px -1px 0 0;
+	padding-left: 26px;
+}
+
+.sign_type1_inline:after {
+	display: block;
+	clear: left;
+	overflow: hidden;
+	height: 0;
+	content: ''
+}
+
+.sign_type1_inline:empty {
+	padding-left: 0;
+}
+
+.sign_type1_inline .sign_tit_wrap {
+	position: absolute;
+	top: -1px;
+	left: 2px;
+	bottom: 0;
+	vertical-align: middle;
+	border: 1px solid #000;
+	width: 24px;
+	background: #eee;
+	display: table-cell
+}
+
+.sign_type1_inline .sign_tit_wrap .sign_tit {
+	display: table;
+	padding: 0 2px;
+	text-align: center;
+	word-break: break-all;
+	white-space: normal;
+	height: 100%
+}
+
+.sign_type1_inline .sign_tit_wrap .sign_tit strong {
+	display: table-cell;
+	vertical-align: middle
+}
+
+.sign_type1_inline .sign_member_wrap {
+	vertical-align: top;
+	background: #fff;
+	display: table-cell;
+	float: left;
+	border: 1px solid #000;
+	border-left: 0;
+	margin: -1px 0 0 0
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member {
+	width: 79px;
+	vertical-align: top;
+	display: table;
+	table-layout: fixed
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_rank_wrap,
+	.sign_type1_inline .sign_member_wrap .sign_member .sign_date_wrap {
+	display: table-row
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_rank,
+	.sign_type1_inline .sign_member_wrap .sign_member .sign_wrap,
+	.sign_type1_inline .sign_member_wrap .sign_member .sign_date {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	width: 79px
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_rank {
+	height: 26px
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_wrap {
+	height: 75px;
+	border-top: 1px solid #000
+}
+
+.sign_type1_inline strong {
+	font-weight: bold;
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_wrap .arbitrary
+	{
+	background: url(../images/arbitrary.gif) no-repeat;
+	height: 40px;
+	width: 79px;
+	padding: 0;
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_date {
+	height: 26px;
+	border-top: 1px solid #000
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_stamp {
+	width: 79px;
+	height: 40px
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_stamp img {
+	width: auto;
+	height: 100%;
+}
+
+.sign_type1_inline .sign_member_wrap .sign_member .sign_wrap>span {
+	padding: 2px 0;
+	display: block
+}
+
+.sign_type1_inline .sign_rank, .sign_type1_inline .sign_name,
+	.sign_type1_inline .sign_position, .sign_type1_inline .sign_type,
+	.sign_type1_inline .sign_date {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 79px;
+}
+
+.sign_arbitrary {
+	background: url(../../images/other/arbitrary.gif) no-repeat;
+    height: 40px;
+    width: 79px;
+    padding: 0;
+}
+	
+}

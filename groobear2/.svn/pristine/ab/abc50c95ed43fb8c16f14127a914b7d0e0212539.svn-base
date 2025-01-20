@@ -1,0 +1,20 @@
+package com.teamtodev.project.vo;
+
+import java.util.List;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(of = "sntncNo")
+public class ProjectPostVO {
+	private int sntncNo;
+	private int bbsNo;
+	private int prjctMbrNo;
+	private String sntncSj;
+	private String sntncCn;
+	private String writngDate;
+	private String atchFileNo;
+	
+	private List<ProjectCommentVO> pjCommentVO; // Has Many
+}

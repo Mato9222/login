@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+	<!-- index -->
+	<definition name="index" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/index.jsp"></put-attribute>
+	</definition>
+	<!-- mypage -->
+	<definition name="/mypage/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/mypage/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- employee -->
+	<definition name="/employee/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/employee/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- attendance -->
+	<definition name="/attendance/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/attendance/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- chat -->
+	<definition name="/chat/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/chat/{1}.jsp"></put-attribute>
+	</definition>
+</tiles-definitions>

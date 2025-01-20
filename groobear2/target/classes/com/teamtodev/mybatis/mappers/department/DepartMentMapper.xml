@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.department.mapper.DepartmentMapper">
+	<resultMap type="DepartmentVO" id="departmentResultMap">
+        <id property="deptNo" column="DEPT_NO" />
+        <result property="deptNm" column="DEPT_NM" />
+        <result property="dprlrEmplNo" column="DPRLR_EMPL_NO" />
+        <result property="upperDeptNo" column="UPPER_DEPT_NO" />
+	</resultMap>
+	
+    <resultMap id="departmentEmpl" type="DepartmentVO">
+        <id property="deptNo" column="DEPT_NO" />
+        <result property="deptNm" column="DEPT_NM" />
+        <result property="dprlrEmplNo" column="DPRLR_EMPL_NO" />
+        <result property="upperDeptNo" column="UPPER_DEPT_NO" />
+        <collection property="emplList" ofType="EmployeeVO">
+            <id property="emplNo" column="EMPL_NO" />
+            <result property="emplNm" column="EMPL_NM" />
+            <result property="ofcpsCode" column="OFCPS_CODE" />
+            <result property="rspofcCode" column="RSPOFC_CODE" />
+            <result property="proflPhotoCours" column="PROFL_PHOTO_COURS" />
+        </collection>
+    </resultMap>
+
+    <insert id="insertDepartment" parameterType="departmentVO">
+        <selectKey order="BEFORE" resultType="int" keyProperty="deptNo">
+            SELECT DEPARTMENT_SEQ.NEXTVAL FROM DUAL
+        </selectKey>     
+        INSERT INTO DEPARTMENT (
+            DEPT_NO
+            DEPT_NM,
+            DPRLR_EMPL_NO,
+            UPPER_DEPT_NO
+        )
+        VALUES (
+            #{deptNo,jdbcType=NUMERIC}
+            , #{deptNm,jdbcType=VARCHAR}
+            , #{dprlrEmplNo,jdbcType=NUMERIC}
+            , #{upperDeptNo,jdbcType=NUMERIC}
+        )
+    </insert>
+
+	<select id="selectDepartmentList" resultMap="departmentResultMap">
+		SELECT
+		    DEPT_NO,
+		    DEPT_NM,
+		    DPRLR_EMPL_NO,
+		    UPPER_DEPT_NO
+		FROM
+		    DEPARTMENT
+	</select>
+
+    <select id="selectDepartmentEmplList" resultMap="departmentEmpl">
+        SELECT 
+            ROW_NUMBER() OVER (ORDER BY DEPT.DEPT_NO) AS row_number,
+            DEPT.DEPT_NO,
+            DEPT.DEPT_NM,
+            DEPT.DPRLR_EMPL_NO,
+            DEPT.UPPER_DEPT_NO,
+            EMP.EMPL_NO,
+            EMP.EMPL_NM,
+            EMP.PROFL_PHOTO_COURS,
+            COMN.CMMN_CODE_NM AS OFCPS_CODE,
+            COMN2.CMMN_CODE_NM AS RSPOFC_CODE
+        FROM 
+            DEPARTMENT DEPT
+        LEFT JOIN 
+            EMPLOYEES EMP ON EMP.DEPT_NO = DEPT.DEPT_NO
+        LEFT JOIN 
+            COMMON_CODE COMN ON EMP.OFCPS_CODE = COMN.CMMN_CODE
+        LEFT JOIN 
+            COMMON_CODE COMN2 ON EMP.RSPOFC_CODE = COMN2.CMMN_CODE
+    </select>
+
+</mapper>

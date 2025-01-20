@@ -1,0 +1,68 @@
+package com.teamtodev.attendance.controller;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.apache.ibatis.javassist.tools.web.BadHttpRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.teamtodev.attendance.service.AttendanceService;
+import com.teamtodev.attendance.vo.AttendanceVO;
+import com.teamtodev.employees.service.EmployeeService;
+import com.teamtodev.employees.vo.EmployeeVO;
+import com.teamtodev.employees.vo.EmployeeVOWrapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequiredArgsConstructor
+@RequestMapping("attendance")
+public class AttendanceController {
+	private final AttendanceService attendanceService;
+	private final EmployeeService employeeService;
+	
+	@GetMapping
+	public String attendance(Model model, Authentication auth) {
+		LocalDate localDate = LocalDate.now();
+		String now = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+		EmployeeVO employeeVO = userWrapper.getRealUser();
+		EmployeeVO empl = employeeService.selectEmployeeById(employeeVO.getEmplId());
+		AttendanceVO attendanceVO = attendanceService.selectAttendanceByDay(empl.getEmplNo(), now);
+		List<AttendanceVO> attendanceList = attendanceService.selectAttendance(empl.getEmplNo());
+		model.addAttribute("empl", empl);
+		model.addAttribute("attendanceVO", attendanceVO);
+		model.addAttribute("attendanceList", attendanceList);
+		return "/attendance/attendance";
+	}
+	
+	@PostMapping
+	public ResponseEntity<AttendanceVO> attendanceUpdate(Authentication auth) throws BadHttpRequest {
+		LocalDateTime localDateTime = LocalDateTime.now();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		String attendDt = dtf.format(localDateTime);
+		String now = localDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+		EmployeeVO employeeVO = userWrapper.getRealUser();
+		EmployeeVO empl = employeeService.selectEmployeeById(employeeVO.getEmplId());
+		AttendanceVO attendanceVO = attendanceService.selectAttendanceByDay(empl.getEmplNo(), now);
+		attendanceVO.setAttendDt(attendDt);
+		int cnt = attendanceService.updateAttendanceAttend(attendanceVO);
+		if(cnt <= 0) {
+			throw new BadHttpRequest();
+		}
+		return ResponseEntity.ok(attendanceVO);
+	}
+	
+}

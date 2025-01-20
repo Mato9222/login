@@ -1,0 +1,80 @@
+document.addEventListener("DOMContentLoaded", function() {
+    // Dropzone 초기화
+    Dropzone.options.ktModalUploadDropzone = {
+        url: '/upload', // 여기를 파일 업로드 처리하는 서버 URL로 변경
+        autoProcessQueue: false,
+        maxFiles: 10,
+        init: function() {
+            var myDropzone = this;
+
+            // "모두 업로드" 버튼 클릭 처리
+            document.querySelector(".dropzone-upload").addEventListener("click", function() {
+                myDropzone.processQueue(); // 파일 업로드 큐 처리
+            });
+
+            // 파일 업로드 성공 시 처리
+            myDropzone.on("success", function(file, response) {
+                addFilesToTable(myDropzone.getAcceptedFiles());
+            });
+
+            // 모든 파일 업로드 완료 시 처리
+            myDropzone.on("queuecomplete", function() {
+                console.log("All files have been uploaded successfully.");
+            });
+        }
+    };
+
+    // 테이블에 파일 정보 추가하는 함수
+// 테이블에 파일 정보 추가하는 함수
+function addFilesToTable(files) {
+    var tbody = document.querySelector("#kt_file_manager_list tbody");
+    var rows = '';
+
+    // 테이블 행 구조 생성
+    files.forEach(file => {
+        rows += `
+            <tr>
+                <td>
+                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                        <input class="form-check-input" type="checkbox" value="1" />
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-files fs-2x text-primary me-4"></i>
+                        <a href="#" class="text-gray-800 text-hover-primary">${file.name}</a>
+                    </div>
+                </td>
+                <td>${(file.size / 1024).toFixed(2)} KB</td>
+                <td>${new Date().toLocaleString()}</td>
+                <td class="text-end" data-kt-filemanager-table="action_dropdown">
+                    <div class="d-flex justify-content-end">
+                        <div class="ms-2">
+                            <button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-filemanager-table-filter="delete_row">
+                                <i class="ki-duotone ki-cross-circle fs-5 m-0">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    // DataTable 초기화 확인
+    var table = $('#kt_file_manager_list').DataTable();
+    if (table) {
+        table.destroy(); // DataTable 파괴
+    }
+
+    tbody.innerHTML = rows; // 기존 tbody 내용 교체
+
+    // DataTable 다시 초기화
+    $('#kt_file_manager_list').DataTable();
+}
+
+});

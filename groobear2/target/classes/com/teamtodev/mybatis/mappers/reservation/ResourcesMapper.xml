@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.reservation.mapper.ResourceMapper">
+	<resultMap type="ResourcesVO" id="resourceMap" autoMapping="true">
+		<association property="commonCode" javaType="CommonVO" >
+			<id property="cmmnCode" column="CMMN_CODE" />
+			<result property="cmmnCodeNm" column="CMMN_CODE_NM"/>
+		</association>
+	</resultMap>
+	<select id="selectRoomList" resultType="ResourcesVO">
+		SELECT
+		    RESRCE_NO,
+		    RESRCE_IEM_CODE,
+		    RESRCE_NM,
+		    RESRCE_REGIST_DE,
+		    RESRCE_UPD_DE,
+		    RESRCE_INFO,
+		    RESRCE_USE_AT,
+		    RESRCE_IMAGE
+		  FROM
+    				RESOURCES
+		WHERE RESRCE_IEM_CODE = 'H01' 
+		ORDER BY RESRCE_NO
+	</select>
+	<select id="selectCarList" resultType="ResourcesVO">
+		SELECT
+		    RESRCE_NO,
+		    RESRCE_IEM_CODE,
+		    RESRCE_NM,
+		    RESRCE_REGIST_DE,
+		    RESRCE_UPD_DE,
+		    RESRCE_INFO,
+		    RESRCE_USE_AT,
+		    RESRCE_IMAGE
+		  FROM
+    				RESOURCES
+		WHERE RESRCE_IEM_CODE = 'H02' 
+		ORDER BY RESRCE_NO
+	</select>
+	<select id="selectUsingList" resultType="ResourcesVO">
+		SELECT
+		    RESRCE_NO,
+		    RESRCE_IEM_CODE,
+		    RESRCE_NM,
+		    RESRCE_REGIST_DE,
+		    RESRCE_UPD_DE,
+		    RESRCE_INFO,
+		    RESRCE_USE_AT,
+		    RESRCE_IMAGE
+		  FROM
+    				RESOURCES
+		WHERE RESRCE_IEM_CODE = 'H04' 
+		ORDER BY RESRCE_NO
+	</select>
+	<select id="selectResourceDetail" resultMap="resourceMap" parameterType="int">
+		SELECT
+		    A.RESRCE_NO,
+		    A.RESRCE_IEM_CODE,
+		    A.RESRCE_NM,
+		    A.RESRCE_REGIST_DE,
+		    A.RESRCE_UPD_DE,
+		    A.RESRCE_INFO,
+		    A.RESRCE_USE_AT,
+		    A.RESRCE_IMAGE,
+		    B.CMMN_CODE_NM
+		  FROM
+    				RESOURCES A, COMMON_CODE B
+    	WHERE RESRCE_NO = #{resrceNo}
+    	     AND A.RESRCE_IEM_CODE = B.CMMN_CODE
+	</select>
+	<select id="selectResourceList" resultType="ResourcesVO">
+				SELECT
+		    RESRCE_NO,
+		    RESRCE_IEM_CODE,
+		    RESRCE_NM,
+		    RESRCE_REGIST_DE,
+		    RESRCE_UPD_DE,
+		    RESRCE_INFO,
+		    RESRCE_USE_AT,
+		    RESRCE_IMAGE
+		  FROM
+    				RESOURCES
+	</select>
+	<select id="selectTimeTypeList" resultType="TimeTypeVO">
+		  SELECT
+			    RESVE_TIME_NO,
+			    BEGIN_TIME,
+			    END_TIME
+			FROM
+			    TIME_TYPE
+
+	</select>
+</mapper>

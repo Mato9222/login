@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectPostMapper">
+	<resultMap type="ProjectPostVO" id="PostMap" autoMapping="true">
+		<id property="sntncNo" column="SNTNC_NO" />
+		<association property="pjMemberVO" javaType="ProjectMemberVO" autoMapping="true">
+			<id property="prjctMbrNo" column="PRJCT_MBR_NO"></id>
+		</association>
+	</resultMap>
+	<insert id="insertProjectPost" parameterType="ProjectPostVO">
+		<selectKey order="BEFORE" keyProperty="sntncNo" resultType="int">
+			SELECT LPAD(WORK_SEQ.NEXTVAL,5,'5882') FROM DUAL
+		</selectKey>
+		INSERT INTO PROJECT_POST (
+		    SNTNC_NO,
+		    BBS_NO,
+		    PRJCT_MBR_NO,
+		    SNTNC_SJ,
+		    SNTNC_CN,
+		    WRITNG_DATE,
+		    ATCH_FILE_NO
+		) VALUES (
+		    #{sntncNo},
+		    'BD01',
+		    #{prjctMbrNo},
+		    #{sntncSj},
+		    #{sntncCn},
+		    SYSDATE,
+		    #{atchFileNo}
+		)
+	</insert>
+	<select id="selectProjectPostList" resultType="ProjectPostVO" parameterType="String">
+		SELECT
+			    A.SNTNC_NO,
+			    A.BBS_NO,
+			    A.PRJCT_MBR_NO,
+			    A.SNTNC_SJ,
+			    A.SNTNC_CN,
+			    A.WRITNG_DATE,
+			    A.ATCH_FILE_NO,
+			    C.EMPL_NM
+			FROM
+			    PROJECT_POST A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE 
+			      A.PRJCT_MBR_NO = B.PRJCT_MBR_NO
+			  AND B.EMPL_NO = C.EMPL_NO  
+			  AND B.PRJCT_CODE = #{prjctCode}
+	</select>
+	<select id="selectProjectPost" resultType="ProjectPostVO" parameterType="ProjectPostVO">
+		SELECT
+			    A.SNTNC_NO,
+			    A.BBS_NO,
+			    A.PRJCT_MBR_NO,
+			    A.SNTNC_SJ,
+			    A.SNTNC_CN,
+			    A.WRITNG_DATE,
+			    A.ATCH_FILE_NO,
+			    C.EMPL_NM
+			FROM
+			    PROJECT_POST A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE 
+			      A.PRJCT_MBR_NO = B.PRJCT_MBR_NO
+			  AND B.EMPL_NO = C.EMPL_NO  
+			  AND B.PRJCT_CODE = #{prjctCode}
+			  AND A.SNTNC_NO = #{sntncNo}
+	</select>
+</mapper>

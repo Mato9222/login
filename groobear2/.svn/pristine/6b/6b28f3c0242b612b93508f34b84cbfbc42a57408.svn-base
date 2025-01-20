@@ -1,0 +1,36 @@
+package com.teamtodev.project.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.teamtodev.project.service.ProjectWorkService;
+import com.teamtodev.project.vo.ProjectWorkVO;
+
+@Controller
+@RequestMapping("/projectWork")
+public class ProjectWorkController {
+	
+	@Autowired
+	private ProjectWorkService service;
+	
+	@GetMapping(value="/detailWork/{worksNo}")
+	@ResponseBody
+	public ProjectWorkVO selectDetailWork(@PathVariable int worksNo) {
+		ProjectWorkVO pwVO = service.retrieveProjectWork(worksNo);
+		return pwVO;
+	}
+	
+	@PostMapping(value="/insertWork",produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String insertWork(@RequestBody ProjectWorkVO pwVO) {
+		service.createProjectWork(pwVO);
+		return "ok";
+	}
+}

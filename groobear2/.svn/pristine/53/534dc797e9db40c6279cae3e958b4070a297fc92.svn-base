@@ -1,0 +1,185 @@
+package com.teamtodev.sanction.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.teamtodev.employees.vo.EmployeeVO;
+import com.teamtodev.employees.vo.EmployeeVOWrapper;
+import com.teamtodev.sanction.service.SanctionDocService;
+import com.teamtodev.sanction.service.SanctionLineService;
+import com.teamtodev.sanction.service.SanctionService;
+import com.teamtodev.sanction.vo.SanctionDocVO;
+import com.teamtodev.sanction.vo.SanctionVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@Slf4j
+@RequestMapping("/sanctionDoc")
+public class SanctionDocController {
+	
+	
+	@Autowired
+	private SanctionDocService service;
+	
+	@Autowired
+	private SanctionService scService;
+	
+	@GetMapping()
+	public String processForm() {
+		return "/sanction/sanctionForm";
+	}
+	
+	@GetMapping("/list")
+	public String sanctionList(Model model, Authentication auth) {
+    	EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+    	EmployeeVO user = userWrapper.getRealUser();
+    	SanctionDocVO scDocVO = new SanctionDocVO();
+    	scDocVO.setDrafterEmplNo(user.getEmplNo());
+    	scDocVO.setTmprStreAt("N");
+		List<SanctionDocVO> scDocList = service.SanctionDocList(scDocVO);
+		model.addAttribute("scDocList", scDocList);
+		return "/sanction/sanctionList";
+	}
+	
+	@GetMapping("/detail/{sanctnDocNo}")
+	public String sanctiondetail(@PathVariable String sanctnDocNo, Model model) {
+		SanctionDocVO scDocVO = service.selectSanctionDoc(sanctnDocNo);
+		List<SanctionVO> scList = scService.scDocSanctionList(sanctnDocNo);
+		log.info("결재리스트 : {}", scList);
+		model.addAttribute("scDocVO", scDocVO);
+		model.addAttribute("scList", scList);
+		return "/sanction/sanctionDetail";
+	}
+	
+    @PostMapping()
+    public String processForm(@RequestBody List<Map<String, String>> data, Authentication auth, HttpSession session) {
+    	EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+    	EmployeeVO user = userWrapper.getRealUser();
+    	Date date = new Date();
+    	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    	String today = sdf.format(date);
+    	String source = data.get(0).get("docCn").toString();
+    	String docRaisngNo = data.get(0).get("docRaisngNo").toString();
+    	Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+    	dataMap.put("address", user.getBassAdres()+" "+user.getDetailAdres());
+    	dataMap.put("phone", user.getMoblphonNo());
+    	dataMap.put("email", user.getEmailAdres());
+    	dataMap.put("encpnDe", user.getEncpnDe());
+    	dataMap.put("emplNo", user.getEmplNo());
+    	dataMap.put("emplDept", user.getDeptNm());
+    	dataMap.put("emplNm", user.getEmplNm());
+    	dataMap.put("deptNm", user.getDeptNm());
+    	dataMap.put("ofcpsCodeNm", user.getOfcpsCodeNm());
+    	dataMap.put("docRaisngNo", docRaisngNo);
+    	dataMap.put("scDate", today);
+    	String regex = "\\$\\{([\\w]+)\\s*\\}";
+    	StringBuffer html = new StringBuffer();
+    	Pattern ptrn = Pattern.compile(regex);
+    	Matcher matcher = ptrn.matcher(source);
+    	while(matcher.find()) {
+    		String identifier = matcher.group(1);
+    		Object value = dataMap.get(identifier);
+    		matcher.appendReplacement(html, Objects.toString(value, ""));
+    	}
+    	matcher.appendTail(html);
+    	data.get(0).put("docCn", html.toString());
+    	session.setAttribute("sanctionData", data);
+        return "redirect:/sanctionDoc";
+    }
+    
+    @PostMapping(value = "/new", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, Object> newSanction(@RequestBody Map<String, Object> requestData, Authentication auth, HttpSession session) {
+        // sanctionDoc 데이터 추출
+        Map<String, String> scDocData = (Map<String, String>) requestData.get("sanctionDoc");
+        SanctionDocVO scDocVO = new SanctionDocVO();
+        scDocVO.setDrafterEmplNo(Integer.parseInt(scDocData.get("drafterEmplNo")));
+        scDocVO.setDocRaisngNo(scDocData.get("docRaisngNo"));
+        scDocVO.setSanctnSj(scDocData.get("sanctnSj"));
+        scDocVO.setSanctnCn(scDocData.get("sanctnCn"));
+        scDocVO.setSanctnLineNo(scDocData.get("sanctnLineNo"));
+        scDocVO.setTmprStreAt("N");
+        service.insertSanctionDoc(scDocVO);
+        
+        List<Map<String, String>> scDataList = (List<Map<String, String>>) requestData.get("sanction");
+        for (Map<String, String> scData : scDataList) {
+        SanctionVO sanctionVO = new SanctionVO();
+        sanctionVO.setSanctnDocNo(scDocVO.getSanctnDocNo());
+        sanctionVO.setSanctnLineNo(scDocData.get("sanctnLineNo"));
+        sanctionVO.setSanctnEmplNo(Integer.parseInt(scData.get("sanctnEmplNo")));
+        sanctionVO.setSanctnOrdr(Integer.parseInt(scData.get("sanctnOrdr")));
+        scService.insertSanction(sanctionVO);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("message", "등록 성공");
+        return result;
+    }
+    
+	@GetMapping("/wait")
+	public String waitSanction(Authentication auth, Model model) {
+		EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+		EmployeeVO user = userWrapper.getRealUser();
+		List<SanctionDocVO> scDocList = service.WaitSanctionDocList(user.getEmplNo());
+		model.addAttribute("waitSclist", scDocList);
+		return "/sanction/waitSanctionList";
+	}
+	
+    @PostMapping(value =  "/update")
+    public String updateSanction(@RequestParam String sanctnDocNo, Model model) {
+		SanctionDocVO scDocVO = service.selectSanctionDoc(sanctnDocNo);
+		List<SanctionVO> scList = scService.scDocSanctionList(sanctnDocNo);
+		model.addAttribute("scDocVO", scDocVO);
+		model.addAttribute("scList", scList);
+		return "/sanction/sanctionForm";
+	}
+    
+    @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, Object> insertSaveSanction(@RequestBody Map<String, Object> requestData, Authentication auth, HttpSession session) {
+        // sanctionDoc 데이터 추출
+        Map<String, String> scDocData = (Map<String, String>) requestData.get("sanctionDoc");
+        SanctionDocVO scDocVO = new SanctionDocVO();
+        scDocVO.setDrafterEmplNo(Integer.parseInt(scDocData.get("drafterEmplNo")));
+        scDocVO.setDocRaisngNo(scDocData.get("docRaisngNo"));
+        scDocVO.setSanctnSj(scDocData.get("sanctnSj"));
+        scDocVO.setSanctnCn(scDocData.get("sanctnCn"));
+        scDocVO.setSanctnLineNo(scDocData.get("sanctnLineNo"));
+        scDocVO.setTmprStreAt("Y");
+        service.insertSanctionDoc(scDocVO);
+        
+        List<Map<String, String>> scDataList = (List<Map<String, String>>) requestData.get("sanction");
+        for (Map<String, String> scData : scDataList) {
+        SanctionVO sanctionVO = new SanctionVO();
+        sanctionVO.setSanctnDocNo(scDocVO.getSanctnDocNo());
+        sanctionVO.setSanctnLineNo(scDocData.get("sanctnLineNo"));
+        sanctionVO.setSanctnEmplNo(Integer.parseInt(scData.get("sanctnEmplNo")));
+        sanctionVO.setSanctnOrdr(Integer.parseInt(scData.get("sanctnOrdr")));
+        scService.insertSanction(sanctionVO);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("message", "등록 성공");
+        return result;
+    }
+}

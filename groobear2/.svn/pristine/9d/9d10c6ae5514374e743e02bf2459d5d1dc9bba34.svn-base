@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.schedule.mapper.ScheduleMapper">
+	<!-- 전체 일정 조회 -->
+	<select id="selectScheduleList" resultType="ScheduleVO">
+			SELECT
+			    SCHDUL_NO,
+			    EMPL_NO,
+			    SCHDUL_BEGIN_DATE,
+			    SCHDUL_END_DATE,
+			    SCHDUL_SJ,
+			    SCHDUL_CN,
+			    SCHDUL_IEM_CODE,
+			    SCHDUL_PLACE,
+			    ALLDAY
+			FROM
+			    SCHEDULE
+	</select>
+
+	<!--  일정 상세 조회 -->
+	<select id="selectSchedule" resultType="ScheduleVO" parameterType="int">
+			SELECT
+			    SCHDUL_NO,
+			    EMPL_NO,
+			    SCHDUL_BEGIN_DATE,
+			    SCHDUL_END_DATE,
+			    SCHDUL_SJ,
+			    SCHDUL_CN,
+			    SCHDUL_IEM_CODE,
+			    SCHDUL_PLACE,
+			    ALLDAY
+			FROM
+			    SCHEDULE
+			  WHERE
+			  	SCHDUL_NO = #{schdulNo}
+	</select>
+	<!-- 일정 추가 -->
+	<insert id="insertSchedule" parameterType="ScheduleVO">
+			<selectKey order="BEFORE" resultType="int" keyProperty="schdulNo">
+			SELECT SCHEDULE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+    INSERT INTO SCHEDULE 
+    (
+        SCHDUL_NO,
+        EMPL_NO,
+        SCHDUL_BEGIN_DATE,
+        SCHDUL_END_DATE,
+        SCHDUL_SJ,
+        SCHDUL_CN,
+        SCHDUL_PLACE,
+        SCHDUL_IEM_CODE,
+        ALLDAY
+    )
+    VALUES
+    (
+        #{schdulNo, jdbcType=NUMERIC},
+        #{emplNo},
+        #{schdulBeginDate},
+        #{schdulEndDate},
+        #{schdulSj},
+        #{schdulCn},
+        #{schdulPlace},
+        #{schdulIemCode},
+        #{allDay}
+    )
+	</insert>
+	<!-- 일정 수정 -->
+	<update id="updateSchedule" parameterType="ScheduleVO">
+	
+	UPDATE SCHEDULE
+    		SET
+		        SCHDUL_BEGIN_DATE = #{schdulBeginDate},
+		        SCHDUL_END_DATE = #{schdulEndDate},
+		        SCHDUL_SJ  =              #{schdulSj},
+		        SCHDUL_CN =			   #{schdulCn},
+		        SCHDUL_PLACE = 		   #{schdulPlace},
+		        SCHDUL_IEM_CODE = #{schdulIemCode},
+		        ALLDAY = #{allDay}
+	WHERE
+    			SCHDUL_NO = #{schdulNo}
+	</update>
+	<!-- 일정 삭제 -->
+	<delete id="deleteSchedule" parameterType="ScheduleVO">
+		DELETE FROM SCHEDULE WHERE SCHDUL_NO = #{schdulNo}
+	</delete>
+</mapper>

@@ -1,0 +1,53 @@
+package com.teamtodev.main.controller;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.teamtodev.employees.vo.EmployeeVO;
+import com.teamtodev.employees.vo.EmployeeVOWrapper;
+import com.teamtodev.main.service.MainService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+public class indexController {
+	@Autowired
+	private MainService mainService;
+
+	@GetMapping("/index.do")
+	public String index(Model model
+			, HttpSession session
+			, Authentication auth ) {
+		
+		leftMenu(model, session, auth);
+		
+		return "index";
+	}
+	
+//	인덱스에서는 되는데 다른 레프트메뉴에도 적용시킬라면 어떻게 해야할까..?
+	public String leftMenu(Model model
+			, HttpSession session
+			, Authentication auth) {
+
+		// 사원번호 꺼내기
+		EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+		EmployeeVO emplVO = userWrapper.getRealUser();
+		// 받은메일함 갯수
+		int mailCount = mainService.receEmailCount(emplVO.getEmplNo());
+		int tempCount = mainService.tempMailCount(emplVO.getEmplNo());
+				
+		log.info("받은 메일 갯수 : {}",mailCount);
+		
+		session.setAttribute("mailCount",mailCount);
+		session.setAttribute("tempCount",tempCount);
+		
+		return "redirect:leftMenu";
+	}
+}

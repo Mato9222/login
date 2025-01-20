@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.adrs.mapper.AdrsMapper">
+
+<!-- 	<resultMap type="EmployeeVO" id="emplMap" autoMapping="true"> -->
+<!-- 		<id property="emplNo" column="EMPL_NO"/> -->
+<!-- 		<association property="comVO" javaType="CommonVO" autoMapping="true"/> -->
+<!-- 	</resultMap> -->
+
+<!-- 	<resultMap type="BuyerVO" id="buyerMap" autoMapping="true"> -->
+<!-- 		<id  property="buyerId" column="BUYER_ID"/> -->
+<!-- 		<association property="lprod" javaType="LprodVO" autoMapping="true" /> -->
+		
+	<select id="selectEmplList" resultType="EmployeeVO">
+		SELECT A.EMPL_NO
+		    , A.EMPL_NM
+		    , B.CMMN_CODE_NM
+		    , A.EMAIL_ADRES
+		FROM EMPLOYEES A INNER JOIN COMMON_CODE B ON(B.CMMN_CODE = A.OFCPS_CODE)
+		ORDER BY A.OFCPS_CODE DESC
+	</select>
+	
+</mapper>

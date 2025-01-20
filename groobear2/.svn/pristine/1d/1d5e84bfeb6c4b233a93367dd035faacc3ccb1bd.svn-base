@@ -1,0 +1,37 @@
+package com.teamtodev.sanction.vo;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.List;
+
+import com.teamtodev.common.vo.CommonVO;
+import com.teamtodev.documents.vo.DocumentFormVO;
+import com.teamtodev.employees.vo.EmployeeVO;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(of = "sanctnDocNo")
+public class SanctionDocVO implements Serializable{
+    private static final long serialVersionUID = 1L;
+    
+	private String sanctnDocNo;
+	private int drafterEmplNo;
+	private String docRaisngNo;
+	private String sanctnSj;
+	private String sanctnCn;
+	private LocalDate recomDe;
+	private LocalDate lastSanctnDe;
+	private String lastSanctnSttusCode;
+	private String lastSanctnSttusNm;
+	private String tmprStreAt;
+	private String dcrbUseAt;
+	private Integer lastRcver;
+	private String doorSign;
+	private String sanctnLineNo;
+	
+	private List<DocumentFormVO> docFormList;
+	private CommonVO commVo;
+	private EmployeeVO emplVo;
+}

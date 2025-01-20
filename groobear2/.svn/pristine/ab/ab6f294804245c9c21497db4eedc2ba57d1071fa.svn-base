@@ -1,0 +1,135 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주소록</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+           font-family: Arial, sans-serif; 
+        } 
+        
+        .address-book {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 200px;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        
+        .sidebar ul li:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .filter {
+            margin-bottom: 10px;
+        }
+        
+        .recipients {
+            display: flex;
+            justify-content: space-between;
+            align-content:center;
+        }
+        
+        .list {
+            width: 50%;
+            height: 617.5px;   
+            border: 1px solid #ccc;
+            padding : 20px;
+        }
+        
+        .rec-list {
+            width: 50%;
+            height: 300px;   
+            border: 1px solid #ccc;
+            border-left: 0px solid;
+            padding : 20px;
+        }
+        
+        .rec-list h3 {
+            margin-top: 0;
+        }
+        
+        .rec-list ul {
+            list-style: none;
+            padding: 0;
+        }
+       
+        .row {
+	        --bs-gutter-x: 1.5rem;
+	        --bs-gutter-y: 0;
+	        display: flex;
+	        flex-wrap: wrap;
+	        margin-top: 0;
+	        margin-right: 0;
+	        margin-left: 0;
+	        padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="address-book">
+        <div class="sidebar">
+            <ul>
+                <li>개인 주소록</li>
+                <li>직원 주소록</li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="filter">
+            </div>
+            <div class="recipients">
+            <div></div>
+                <div class="list">
+	                <h3>리스트</h3>
+                    <div>이름1 (asdasdasd@naver.com) </div>
+					<div>이름2 </div>
+                    <ul>
+                    	<li>이름3(mandlasdl@gamil.com)</li>
+                    	<li>이름4</li>
+                    </ul>
+                </div>
+                <div class="row card-body pb-4 d-flex Sflex-wrap align-items-center">
+                    <div class="row card-body pb-4 d-flex flex-wrap align-items-center"> 
+	                   	<div class="card-body pb-4 flex-wrap align-items-center rec-list "> 
+	                   		<h1>받는 사람 0</h1>
+		                   		<ul>
+		                   			<li>asdasd1</li>
+		                   		</ul>
+	                   	</div>
+ 					</div>
+					<div class="row card-body pb-4 d-flex flex-wrap align-items-center">
+	                    <div class="card-body pb-4 flex-wrap align-items-center rec-list "> 
+	                    	<h1> 참조 0</h1>
+		                    	<ul>
+		                   			<li>asdasd2</li>
+		                   		</ul>
+	                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

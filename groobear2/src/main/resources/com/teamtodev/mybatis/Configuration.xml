@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+<configuration>
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	<typeAliases>
+		<typeAlias type="com.teamtodev.paging.PaginationInfo" alias="PaginationInfo"/>
+		<package name="com.teamtodev.attachfile.vo" />
+		<package name="com.teamtodev.board.vo" />
+		<package name="com.teamtodev.attendance.vo" />
+		<package name="com.teamtodev.chatroom.vo" />
+		<package name="com.teamtodev.employees.vo"/>
+		<package name="com.teamtodev.department.vo"/>
+		<package name="com.teamtodev.application.vo"/>
+		<package name="com.teamtodev.attachFile.vo"/>
+		<package name="com.teamtodev.authority.vo"/>
+		<package name="com.teamtodev.businessCard.vo"/>
+		<package name="com.teamtodev.chatRoom.vo"/>
+		<package name="com.teamtodev.common.vo"/>
+		<package name="com.teamtodev.mail.vo"/>
+		<package name="com.teamtodev.notify.vo"/>
+		<package name="com.teamtodev.project.vo"/>
+		<package name="com.teamtodev.referenceCenter.vo"/>
+		<package name="com.teamtodev.reservation.vo"/>
+		<package name="com.teamtodev.sanction.vo"/>
+		<package name="com.teamtodev.schedule.vo"/>
+		<package name="com.teamtodev.vacation.vo"/>
+	</typeAliases>
+</configuration>
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+package com.teamtodev.attachfile.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.teamtodev.attachfile.vo.AttachVO;
+import com.teamtodev.board.vo.PostVO;
+
+@Mapper
+public interface AttachMapper {
+	
+	/**
+	 * 게시판 - 첨부파일정보 DB 등록 메서드
+	 * @param attachFiles : 멀티파트파일 배열
+	 * @return DB등록한 갯수 반환
+	 */
+	public int insertAttach(PostVO postVO);
+	
+	/**
+	 * 단일 첨부파일 조회
+	 * @param attachVO 
+	 * @return 
+	 */
+	public AttachVO selectAttach(AttachVO attachVO);
+	
+}

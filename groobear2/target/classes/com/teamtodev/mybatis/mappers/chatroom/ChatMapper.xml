@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.mappers.chatroom.ChatMapper">
+	<select id="selectChat" resultType="ChatVO" parameterType="int">
+		SELECT
+			CHAT.EMPL_NO
+			, CHAT.CHAT_ROOM_NO
+			, CR.CHAT_ROOM_NM
+		FROM
+			CHAT CHAT
+			LEFT JOIN
+			CHAT_ROOM CR ON CHAT.CHAT_ROOM_NO = CR.CHAT_ROOM_NO 
+		WHERE
+			EMPL_NO = #{emplNo}
+	</select>
+	
+	<select id="selectChatList" resultType="ChatVO" parameterType="int">
+		SELECT
+			EMPL_NO
+			, CHAT_ROOM_NO
+		FROM
+			CHAT
+		WHERE
+			EMPL_NO = #{emplNo}
+	</select>
+</mapper>

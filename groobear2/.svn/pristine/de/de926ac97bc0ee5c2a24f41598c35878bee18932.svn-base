@@ -1,0 +1,23 @@
+package com.teamtodev.adrs.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/address")
+public class adrsController {
+	
+	@GetMapping
+	public String adrsList () {
+		
+		return "/address/address";
+	}
+	
+	@PostMapping("/new")
+	public String adrsInsert() {
+		
+		return "";
+	}
+}

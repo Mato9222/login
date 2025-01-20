@@ -1,0 +1,33 @@
+let today = moment().format("YYYY-MM-DDTHH:mm:ss");
+let attendDt = $("attendDt");
+let attendDtValue = $("#attendDt").val();
+let lvffcDt = $("#lvffcTime").val();
+
+$("#attendBtn").on("click", function() {
+	$.ajax({
+		url : "/attendance"
+		, method : "POST"
+		, dataType : "text"
+		, success : function(data){
+			if(data == "success"){
+				swal.fire({
+					text : "출근 !!"
+					, icon : "success"
+					, buttonsStyling : false
+					, confirmButtonText : "확인"
+					, customClass : {
+						confirmButton : "btn fw-bold btn-light-primary"
+					}
+			    }).then((result) => {
+					if (result.isConfirmed) {
+						attendDt = attendDtValue;
+					}
+			    });
+			}
+		} 
+	})
+});
+
+$("#lvffcBtn").on("click", function() {
+	
+});

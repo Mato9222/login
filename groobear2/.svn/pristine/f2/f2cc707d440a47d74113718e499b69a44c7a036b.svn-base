@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.main.mapper.MainMapper">
+
+	<select id="receMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		  FROM RECIPIENTS
+		 WHERE EMPL_NO = #{emplNo}
+		  AND DEL_CODE = 'N'
+		  AND READ_TIME IS NULL
+	</select>
+	
+	<select id="tempMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		FROM EMAIL 
+		WHERE EMPL_NO = #{emplNo}
+		  AND TMPR_STRE_AT = 'Y'
+	</select>
+	
+	<select id="mainPost" resultType="PostVO">
+		SELECT B.* 
+			FROM (
+			    SELECT ROWNUM AS RNUM, A.*
+			    FROM (
+			        SELECT 
+			              POST.SNTNC_NO   								/* 글번호 */
+			            , POST.BBS_NO     								/* 게시판번호 */
+			            , BOARD.BBS_NM AS BBS_NM   						/* 게시판명 */
+			            , POST.EMPL_NO    								/* 사원번호 */
+			            , POST.CTGRY_CODE AS CTGRY_CODE					/* 카테고리코드 */
+			            , POST.SNTNC_SJ   								/* 글제목 */
+			            , POST.RDCNT      								/* 조회수 */
+			            , POST.MNGR_AT    								/* 관리자여부 */
+			            , POST.OTHBC_AT   								/* 공개여부 */
+			            , POST.REGIST_DT  								/* 등록일시 */
+			            , POST.DELETE_AT  								/* 삭제여부 */
+			            , POST.ATCH_FILE_AT   							/* 파일첨부여부 */
+			            , COMMON_CODE.CMMN_CODE_NM  AS CMMN_CODE_NM		/* 카테고리명 */
+			            , EMPLOYEES.EMPL_NM AS EMPL_NM					/* 사원명 */
+			            , EMPLOYEES.EMPL_ID AS EMPL_ID 					/* 사원아이디 */
+			        FROM POST 
+			        INNER JOIN BOARD 
+			        	ON POST.BBS_NO = BOARD.BBS_NO
+			        INNER JOIN COMMON_CODE 
+			        	ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+			        INNER JOIN EMPLOYEES 
+						ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+			        WHERE 1=1
+				        AND POST.OTHBC_AT = 'Y'   						/* 공개여부 */
+				        /* OR    (POST.EMPL_NO = '2405175' AND POST.OTHBC_AT = 'N') */
+				        AND POST.DELETE_AT = 'N'  						/* 삭제여부 */
+				        ORDER BY POST.SNTNC_NO DESC
+			    ) A
+			) B
+			<![CDATA[
+	 		WHERE ROWNUM <= 5 
+			]]> 
+		
+<!-- 		SELECT A.SNTNC_NO -->
+<!-- 				, A.SNTNC_SJ -->
+<!-- 				, A.SNTNC_CN -->
+<!-- 		  FROM ( -->
+<!-- 			  	SELECT  SNTNC_NO -->
+<!-- 					  	, SNTNC_SJ -->
+<!-- 					  	, SNTNC_CN -->
+<!-- 			    FROM POST  -->
+<!-- 		) A -->
+<!-- 		<![CDATA[ -->
+<!-- 		WHERE ROWNUM <= 5 -->
+<!-- 		]]> -->
+	</select>
+	
+	<select id="snacWait" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+	 	  FROM SANCTION
+	 	 WHERE SANCTN_EMPL_NO =  #{emplNo}
+	 	   AND SANCTN_STTUS_CODE = 'J01' /* J01 결재대기, J02 결재진행중, J03 결재완료, J04 반려*/
+	</select>
+	
+	<select id="snacPros" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+	 	  FROM SANCTION
+	 	 WHERE SANCTN_EMPL_NO =  #{emplNo}
+	 	   AND SANCTN_STTUS_CODE = 'J02' /* J01 결재대기, J02 결재진행중, J03 결재완료, J04 반려*/
+	</select>
+
+	<select id="snacComp" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+	 	  FROM SANCTION
+	 	 WHERE SANCTN_EMPL_NO =  #{emplNo}
+	 	   AND SANCTN_STTUS_CODE = 'J03' /* J01 결재대기, J02 결재진행중, J03 결재완료, J04 반려*/
+	</select>
+	
+	<select id="snacReje" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+	 	  FROM SANCTION
+	 	 WHERE SANCTN_EMPL_NO =  #{emplNo}
+	 	   AND SANCTN_STTUS_CODE = 'J04' /* J01 결재대기, J02 결재진행중, J03 결재완료, J04 반려*/
+	</select>
+	
+
+</mapper>

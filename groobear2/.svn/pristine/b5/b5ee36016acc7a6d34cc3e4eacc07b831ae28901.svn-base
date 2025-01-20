@@ -1,0 +1,47 @@
+let today = moment().format("YYYY-MM-DDTHH:mm:ss");
+
+$("#attendBtn").on("click", function() {
+	$.ajax({
+		url : "/attendance"
+		, method : "POST"
+		, dataType : "text"
+		, success : function(data){
+			swal.fire({
+				text : "출근 !!"
+				, icon : "success"
+				, buttonsStyling : false
+				, confirmButtonText : "확인"
+				, customClass : {
+					confirmButton : "btn fw-bold btn-light-primary"
+				}
+		    }).then((result) => {
+				if (result.isConfirmed) {
+					location.reload();
+				}
+		    });
+		} 
+	})
+});
+
+$("#lvffcBtn").on("click", function() {
+	$.ajax({
+		url : "/attendance"
+		, method : "POST"
+		, dataType : "text"
+		, success : function(data){
+			swal.fire({
+				text : "퇴근 !!!!"
+				, icon : "success"
+				, buttonsStyling : false
+				, confirmButtonText : "확인"
+				, customClass : {
+					confirmButton : "btn fw-bold btn-light-primary"
+				}
+		    }).then((result) => {
+				if (result.isConfirmed) {
+					location.reload();
+				}
+		    });
+		} 
+	})
+});

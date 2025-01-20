@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectLogMapper">
+	<insert id="insertLog" parameterType="ProjectLogVO">
+			INSERT INTO PROJECT_LOG (
+					    LOG_NO,
+					    LOG_CLASS,
+					    LOG_STATUS,
+					    LOG_CON_PK
+					) VALUES (
+					    PJ_LOG_SEQ.NEXTVAL,
+					    #{logClass},
+					    #{logStatus},
+					    #{logConPk}
+					)
+	</insert>
+	
+	<select id="selectLogList" resultType="ProjectLogVO" parameterType="String">
+        WITH LOG_INFO AS(
+		SELECT
+			    A.LOG_NO,
+                A.LOG_CLASS,
+                A.LOG_STATUS,
+                A.LOG_CON_PK,
+                A.LOG_DATE,
+                B.WORKS_TITLE,
+                B.PRJCT_MBR_NO
+			FROM
+		    	PROJECT_LOG A, WORKS B
+           WHERE
+                A.LOG_CON_PK = B.WORKS_NO
+		    ORDER BY
+		       LOG_NO DESC )
+         ,PRJ_MEM_VIEW AS (
+                            SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+                            FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+                            )
+         SELECT INFO.*,PRJ_MEM_VIEW.EMPL_NM,PRJ_MEM_VIEW.PRJCT_CODE
+         FROM LOG_INFO INFO
+         INNER JOIN PRJ_MEM_VIEW ON(INFO.PRJCT_MBR_NO = PRJ_MEM_VIEW.PRJCT_MBR_NO)
+         WHERE PRJ_MEM_VIEW.PRJCT_CODE = #{prjctCode}
+	</select>
+</mapper>

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.employees.mapper.EmployeeMapper">
+<resultMap id="employeeResultMap" type="EmployeeVO">
+    <id property="emplNo" column="EMPL_NO" />
+    <result property="emplNm" column="EMPL_NM" />
+    <result property="emplId" column="EMPL_ID" />
+    <result property="emplPw" column="EMPL_PW" />
+    <result property="ihidnum" column="IHIDNUM" />
+    <result property="cmmnCode" column="CMMN_CODE" />
+    <result property="ofcpsCode" column="OFCPS_CODE" />
+    <result property="rspofcCode" column="RSPOFC_CODE" />
+    <result property="lxtnNo" column="LXTN_NO" />
+    <result property="emgncContactNtwkNo" column="EMGNC_CONTACT_NTWK_NO" />
+    <result property="moblphonNo" column="MOBLPHON_NO" />
+    <result property="bassAdres" column="BASS_ADRES" />
+    <result property="detailAdres" column="DETAIL_ADRES" />
+    <result property="zip" column="ZIP" />
+    <result property="emailAdres" column="EMAIL_ADRES" />
+    <result property="encpnDe" column="ENCPN_DE" />
+    <result property="retireDe" column="RETIRE_DE" />
+    <result property="cnwkYycnt" column="CNWK_YYCNT" />
+    <result property="proflPhotoCours" column="PROFL_PHOTO_COURS" />
+    <result property="acntLockAt" column="ACNT_LOCK_AT" />
+    <result property="loginFailrCo" column="LOGIN_FAILR_CO" />
+
+    <!-- 수정된 매핑 추가 -->
+    <result property="deptNo" column="DEPT_NO" />
+
+    <!-- cmmnCode 필드에 대한 매핑 수정 -->
+    <result property="cmmnCode" column="CMMN_CODE" />
+</resultMap>
+	<insert id="insertEmployee" parameterType="EmployeeVO">
+		<selectKey order="BEFORE" resultType="int"	keyProperty="emplNo">
+			SELECT TO_NUMBER(TO_CHAR(SYSDATE, 'YYMMDD')||EMPLOYEES_SEQ.NEXTVAL) FROM DUAL
+		</selectKey>	
+		INSERT INTO EMPLOYEES (
+		    EMPL_NO,
+		    EMPL_NM,
+		    EMPL_ID,
+		    EMPL_PW,
+		    IHIDNUM,
+		    CMMN_CODE,
+		    OFCPS_CODE,
+		    RSPOFC_CODE,
+		    LXTN_NO,
+		    EMGNC_CONTACT_NTWK_NO,
+		    MOBLPHON_NO,
+		    BASS_ADRES,
+		    DETAIL_ADRES,
+		    ZIP,
+		    EMAIL_ADRES,
+		    ENCPN_DE,
+		    RETIRE_DE,
+		    CNWK_YYCNT,
+		    PROFL_PHOTO_COURS,
+		    LOGIN_FAILR_CO,
+		    DEPT_NO
+		) VALUES (
+			#{emplNo,jdbcType=NUMERIC}
+			, #{emplNm,jdbcType=VARCHAR}
+			, #{emplId,jdbcType=VARCHAR}
+			, #{emplPw,jdbcType=VARCHAR}
+			, #{ihidnum,jdbcType=VARCHAR}
+			, #{cmmnCode,jdbcType=VARCHAR}
+			, #{ofcpsCode,jdbcType=VARCHAR}
+			, #{rspofcCode,jdbcType=VARCHAR}
+			, #{lxtnNo,jdbcType=NUMERIC}
+			, #{emgncContactNtwkNo,jdbcType=VARCHAR}
+			, #{moblphonNo,jdbcType=VARCHAR}
+			, #{bassAdres,jdbcType=VARCHAR}
+			, #{detailAdres,jdbcType=VARCHAR}
+			, #{zip,jdbcType=NUMERIC}
+			, #{emailAdres,jdbcType=VARCHAR}
+			, #{encpnDe,jdbcType=DATE}
+			, #{retireDe,jdbcType=DATE}
+			, #{cnwkYycnt,jdbcType=NUMERIC}
+			, #{proflPhotoCours,jdbcType=VARCHAR}
+			, #{loginFailrCo,jdbcType=NUMERIC}
+			, #{deptNo,jdbcType=NUMERIC}
+		)
+	</insert>
+	
+	<select id="selectEmplForAuth" parameterType="String" resultType="EmployeeVO">
+		SELECT
+			EMP.EMPL_NO,
+			EMP.EMPL_NM,
+			EMP.EMPL_ID,
+			EMP.EMPL_PW,
+			EMP.IHIDNUM,
+			EMP.CMMN_CODE,
+			CC1.CMMN_CODE_NM AS CMMN_CODE_NM,
+			EMP.OFCPS_CODE,
+			CC2.CMMN_CODE_NM AS OFCPS_CODE_NM,
+			EMP.RSPOFC_CODE,
+			CC3.CMMN_CODE_NM AS RSPOFC_CODE_NM,
+			EMP.LXTN_NO,
+			EMP.EMGNC_CONTACT_NTWK_NO,
+			EMP.MOBLPHON_NO,
+			EMP.BASS_ADRES,
+			EMP.DETAIL_ADRES,
+			EMP.ZIP,
+			EMP.EMAIL_ADRES,
+			TO_CHAR(EMP.ENCPN_DE, 'YYYY-MM-DD') AS ENCPN_DE,
+			TO_CHAR(EMP.RETIRE_DE, 'YYYY-MM-DD') AS RETIRE_DE,
+			EMP.CNWK_YYCNT,
+			EMP.PROFL_PHOTO_COURS,
+			EMP.ACNT_LOCK_AT,
+			EMP.LOGIN_FAILR_CO,
+			EMP.DEPT_NO,
+			EMP.SANCTN_CTPNT_URL,
+			CC4.DEPT_NM AS DEPT_NM
+		FROM
+			EMPLOYEES EMP
+			LEFT JOIN
+			COMMON_CODE CC1 ON EMP.CMMN_CODE = CC1.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC2 ON EMP.OFCPS_CODE = CC2.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC3 ON EMP.RSPOFC_CODE = CC3.CMMN_CODE
+			LEFT JOIN
+			DEPARTMENT CC4 ON EMP.DEPT_NO = CC4.DEPT_NO
+		WHERE
+			EMPL_ID = #{emplId}
+	</select>
+	
+	<select id="selectEmployeeList" resultMap="employeeResultMap">
+		SELECT
+			EMP.EMPL_NO,
+			EMP.EMPL_NM,
+			EMP.EMPL_ID,
+			EMP.EMPL_PW,
+			EMP.IHIDNUM,
+			EMP.CMMN_CODE,
+			CC1.CMMN_CODE_NM AS CMMN_CODE_NM,
+			EMP.OFCPS_CODE,
+			CC2.CMMN_CODE_NM AS OFCPS_CODE_NM,
+			EMP.RSPOFC_CODE,
+			CC3.CMMN_CODE_NM AS RSPOFC_CODE_NM,
+			EMP.LXTN_NO,
+			EMP.EMGNC_CONTACT_NTWK_NO,
+			EMP.MOBLPHON_NO,
+			EMP.BASS_ADRES,
+			EMP.DETAIL_ADRES,
+			EMP.ZIP,
+			EMP.EMAIL_ADRES,
+			TO_CHAR(EMP.ENCPN_DE, 'YYYY-MM-DD') AS ENCPN_DE,
+			TO_CHAR(EMP.RETIRE_DE, 'YYYY-MM-DD') AS RETIRE_DE,
+			EMP.CNWK_YYCNT,
+			EMP.PROFL_PHOTO_COURS,
+			EMP.ACNT_LOCK_AT,
+			EMP.LOGIN_FAILR_CO,
+			EMP.DEPT_NO,
+			EMP.SANCTN_CTPNT_URL,
+			CC4.DEPT_NM AS DEPT_NM
+		FROM
+			EMPLOYEES EMP
+			LEFT JOIN
+			COMMON_CODE CC1 ON EMP.CMMN_CODE = CC1.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC2 ON EMP.OFCPS_CODE = CC2.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC3 ON EMP.RSPOFC_CODE = CC3.CMMN_CODE
+			LEFT JOIN
+			DEPARTMENT CC4 ON EMP.DEPT_NO = CC4.DEPT_NO
+		ORDER BY
+			EMP.OFCPS_CODE DESC, ENCPN_DE DESC
+	</select>
+
+	<select id="selectEmployeeById" resultMap="employeeResultMap" parameterType="string">
+		SELECT
+			EMP.EMPL_NO,
+			EMP.EMPL_NM,
+			EMP.EMPL_ID,
+			EMP.EMPL_PW,
+			EMP.IHIDNUM,
+			EMP.CMMN_CODE,
+			CC1.CMMN_CODE_NM AS CMMN_CODE_NM,
+			EMP.OFCPS_CODE,
+			CC2.CMMN_CODE_NM AS OFCPS_CODE_NM,
+			EMP.RSPOFC_CODE,
+			CC3.CMMN_CODE_NM AS RSPOFC_CODE_NM,
+			EMP.LXTN_NO,
+			EMP.EMGNC_CONTACT_NTWK_NO,
+			EMP.MOBLPHON_NO,
+			EMP.BASS_ADRES,
+			EMP.DETAIL_ADRES,
+			EMP.ZIP,
+			EMP.EMAIL_ADRES,
+			TO_CHAR(EMP.ENCPN_DE, 'YYYY-MM-DD') AS ENCPN_DE,
+			TO_CHAR(EMP.RETIRE_DE, 'YYYY-MM-DD') AS RETIRE_DE,
+			EMP.CNWK_YYCNT,
+			EMP.PROFL_PHOTO_COURS,
+			EMP.ACNT_LOCK_AT,
+			EMP.LOGIN_FAILR_CO,
+			EMP.DEPT_NO,
+			EMP.SANCTN_CTPNT_URL,
+			CC4.DEPT_NM AS DEPT_NM
+		FROM
+			EMPLOYEES EMP
+			LEFT JOIN
+			COMMON_CODE CC1 ON EMP.CMMN_CODE = CC1.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC2 ON EMP.OFCPS_CODE = CC2.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC3 ON EMP.RSPOFC_CODE = CC3.CMMN_CODE
+			LEFT JOIN
+			DEPARTMENT CC4 ON EMP.DEPT_NO = CC4.DEPT_NO
+		WHERE
+			EMP.EMPL_ID = #{emplId}
+	</select>
+	
+	<select id="selectEmployeeByNo" resultMap="employeeResultMap" parameterType="int">
+		SELECT
+			EMP.EMPL_NO,
+			EMP.EMPL_NM,
+			EMP.EMPL_ID,
+			EMP.EMPL_PW,
+			EMP.IHIDNUM,
+			EMP.CMMN_CODE,
+			CC1.CMMN_CODE_NM AS CMMN_CODE_NM,
+			EMP.OFCPS_CODE,
+			CC2.CMMN_CODE_NM AS OFCPS_CODE_NM,
+			EMP.RSPOFC_CODE,
+			CC3.CMMN_CODE_NM AS RSPOFC_CODE_NM,
+			EMP.LXTN_NO,
+			EMP.EMGNC_CONTACT_NTWK_NO,
+			EMP.MOBLPHON_NO,
+			EMP.BASS_ADRES,
+			EMP.DETAIL_ADRES,
+			EMP.ZIP,
+			EMP.EMAIL_ADRES,
+			TO_CHAR(EMP.ENCPN_DE, 'YYYY-MM-DD') AS ENCPN_DE,
+			TO_CHAR(EMP.RETIRE_DE, 'YYYY-MM-DD') AS RETIRE_DE,
+			EMP.CNWK_YYCNT,
+			EMP.PROFL_PHOTO_COURS,
+			EMP.ACNT_LOCK_AT,
+			EMP.LOGIN_FAILR_CO,
+			EMP.DEPT_NO,
+			EMP.SANCTN_CTPNT_URL,
+			CC4.DEPT_NM AS DEPT_NM
+		FROM
+			EMPLOYEES EMP
+			LEFT JOIN
+			COMMON_CODE CC1 ON EMP.CMMN_CODE = CC1.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC2 ON EMP.OFCPS_CODE = CC2.CMMN_CODE
+			LEFT JOIN
+			COMMON_CODE CC3 ON EMP.RSPOFC_CODE = CC3.CMMN_CODE
+			LEFT JOIN
+			DEPARTMENT CC4 ON EMP.DEPT_NO = CC4.DEPT_NO
+		WHERE
+			EMP.EMPL_NO = #{emplNo}
+	</select>
+	
+	<update id="updateEmployee" parameterType="EmployeeVO">
+		UPDATE
+			EMPLOYEES
+		SET
+			EMGNC_CONTACT_NTWK_NO = #{emgncContactNtwkNo}
+			, MOBLPHON_NO = #{moblphonNo}
+			, BASS_ADRES = #{bassAdres}
+			, DETAIL_ADRES = #{detailAdres}
+			, EMAIL_ADRES = #{emailAdres}
+			, PROFL_PHOTO_COURS = #{proflPhotoCours}
+			, ZIP = #{zip}
+			, LXTN_NO = #{lxtnNo}
+		WHERE
+			EMPL_NO = #{emplNo}
+	</update>
+	
+	<update id="UpdateEmployeeSignURL" parameterType="EmployeeVO">
+		UPDATE
+			EMPLOYEES
+		SET
+			SANCTN_CTPNT_URL = #{sanctnCtpntUrl,jdbcType=VARCHAR}
+		WHERE
+			EMPL_NO = #{emplNo}
+	</update>
+ 	
+	<select id="selectEmplPasswordAccess" parameterType="EmployeeVO">
+		SELECT CASE
+		           WHEN COUNT(*) > 0 THEN 1
+		           ELSE 0
+		       END AS COUNT_RESULT
+		FROM EMPLOYEES
+		WHERE EMPL_ID = #{emplId}
+	</select>
+	
+</mapper>

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.board.mapper.PostMapper">
+
+	<!-- 새로운 게시글 등록 -->
+	<insert id="insertPost" parameterType="PostVO">
+		<!-- 게시글번호 시퀀스로 생성 -->
+		<selectKey order="BEFORE" resultType="int" keyProperty="sntncNo">
+			SELECT LPAD(POST_SEQ.NEXTVAL, 8, 0) FROM DUAL
+		</selectKey>
+		INSERT INTO POST (
+			  SNTNC_NO     		/* 글번호 */
+			, BBS_NO			/* 게시판번호 */
+			, EMPL_NO			/* 사원번호 */
+			, CTGRY_CODE		/* 카테고리코드 */
+			, SNTNC_SJ			/* 글제목 */
+			, SNTNC_CN			/* 글내용 */
+			, ATCH_FILE_NO		/* 첨부파일넘버 */
+			, ATCH_FILE_AT		/* 파일첨부여부 */
+			, MNGR_AT			/* 관리자여부 */
+			, OTHBC_AT			/* 공개여부 */
+			, REGIST_DT			/* 등록일시 */
+			, DEPT_NO			/* 부서번호 */
+		)VALUES(
+			  #{sntncNo} 		/* 글번호 */
+			, #{bbsNo} 			/* 게시판번호 */
+			, #{emplNo} 		/* 사원번호 */
+			, #{ctgryCode} 		/* 카테고리코드 */
+			, #{sntncSj} 		/* 글제목 */
+			, #{sntncCn} 		/* 글내용 */
+			, #{atchFileNo} 	/* 첨부파일넘버 */
+			, #{atchFileAt} 	/* 파일첨부여부 */
+			, #{mngrAt} 		/* 관리자여부 */
+			, #{othbcAt} 		/* 공개여부 */
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') 	/* 등록일시 */
+			, #{deptNo}			/* 부서번호 */
+		)
+	</insert>
+	
+	
+	<!-- 검색 조건 -->
+	<!-- INSTR() : 해당 문자열이 포함되어 있으면 문자열 시작위치를 반환한다. 없으면 0을 반환 -->
+	<sql id="searchFrag">
+		/* 카테고리 조건 */
+		<if test="paging.simpleCondition != null and @org.apache.commons.lang3.StringUtils@isNotBlank(paging.simpleCondition.searchType2)">
+			AND INSTR(POST.CTGRY_CODE, #{paging.simpleCondition.searchType2}) > 0
+		</if>
+		
+		/* 제목, 작성자 조건 */
+		<if test="paging.simpleCondition neq null and @org.apache.commons.lang3.StringUtils@isNotBlank(paging.simpleCondition.searchWord)">
+			<choose>
+				<when test="paging.simpleCondition.searchType eq 'title'">
+					AND INSTR(POST.SNTNC_SJ, #{paging.simpleCondition.searchWord}) > 0
+				</when>
+				<when test="paging.simpleCondition.searchType eq 'writer'">
+					AND INSTR(EMPLOYEES.EMPL_NM, #{paging.simpleCondition.searchWord}) > 0 <!-- TODO:사용자아디 -->
+				</when>
+				<otherwise>
+					AND (
+						INSTR(POST.SNTNC_SJ, #{paging.simpleCondition.searchWord}) > 0
+						OR INSTR(EMPLOYEES.EMPL_NM, #{paging.simpleCondition.searchWord}) > 0
+					)
+				</otherwise>
+			</choose>
+		</if>
+		/* 공지게시물 조건 */
+        <if test="bbsNo eq 2">
+	        AND POST.BBS_NO = #{bbsNo}				/* 게시판번호 */
+        </if>
+		
+		/* 부서게시물 조건 */
+        <if test="bbsNo eq 3">
+            AND POST.BBS_NO = #{bbsNo}				/* 게시판번호 */
+	        AND POST.DEPT_NO = #{employeeVO.deptNo}	/* 부서번호 */
+        </if>
+	</sql>
+	
+	
+	<!-- 게시판 목록 조회 -->
+	<select id="selectPostList" resultMap="postVoMap" parameterType="Map">
+		SELECT B.* 
+		FROM (
+		    SELECT ROWNUM AS RNUM, A.*
+		    FROM (
+		        SELECT 
+				      POST.SNTNC_NO   								/* 글번호 */
+				    , POST.BBS_NO     								/* 게시판번호 */
+				    , BOARD.BBS_NM AS BBS_NM   						/* 게시판명 */
+				    , POST.EMPL_NO    								/* 사원번호 */
+				    , POST.DEPT_NO    								/* 부서번호 */
+				    , POST.CTGRY_CODE								/* 카테고리코드 */
+				    , POST.SNTNC_SJ   								/* 글제목 */
+				    , POST.RDCNT      								/* 조회수 */
+				    , POST.MNGR_AT    								/* 관리자여부 */
+				    , POST.OTHBC_AT   								/* 공개여부 */
+				    , POST.REGIST_DT  								/* 등록일시 */
+				    , POST.DELETE_AT  								/* 삭제여부 */
+				    , POST.ATCH_FILE_AT   							/* 파일첨부여부 */
+				    , COMMON_CODE.CMMN_CODE							/* 공통코드 */
+				    , COMMON_CODE.CMMN_CODE_GROUPNM					/* 공통코드그룹 */
+				    , COMMON_CODE.CMMN_CODE_NM						/* 공통코드명 - 카테고리명 */
+				    , COMMON_CODE.USE_AT							/* 사용여부 */
+				    , EMPLOYEES.EMPL_NM								/* 사원이름 */
+				    , EMPLOYEES.EMPL_ID			 					/* 사원아이디 */
+				    , EMPLOYEES.OFCPS_CODE 							/* 직위코드 */
+				    , EMPLOYEES.RSPOFC_CODE 						/* 직책코드 */
+				    , EMPLOYEES.PROFL_PHOTO_COURS 					/* 프로필사진경로 */
+				FROM POST 
+				INNER JOIN BOARD 
+				    ON POST.BBS_NO = BOARD.BBS_NO
+				INNER JOIN COMMON_CODE 
+				    ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+				INNER JOIN EMPLOYEES 
+				    ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+				WHERE 1=1
+					<include refid="searchFrag" />
+				    AND POST.OTHBC_AT = 'Y'   						/* 공개여부 */
+				    AND POST.DELETE_AT = 'N'  						/* 삭제여부 */
+				    
+				UNION
+				
+				SELECT 
+				      POST.SNTNC_NO   								/* 글번호 */
+				    , POST.BBS_NO     								/* 게시판번호 */
+				    , BOARD.BBS_NM AS BBS_NM   						/* 게시판명 */
+				    , POST.EMPL_NO    								/* 사원번호 */
+				    , POST.DEPT_NO    								/* 부서번호 */
+				    , POST.CTGRY_CODE								/* 카테고리코드 */
+				    , POST.SNTNC_SJ   								/* 글제목 */
+				    , POST.RDCNT      								/* 조회수 */
+				    , POST.MNGR_AT    								/* 관리자여부 */
+				    , POST.OTHBC_AT   								/* 공개여부 */
+				    , POST.REGIST_DT  								/* 등록일시 */
+				    , POST.DELETE_AT  								/* 삭제여부 */
+				    , POST.ATCH_FILE_AT   							/* 파일첨부여부 */
+				    , COMMON_CODE.CMMN_CODE							/* 공통코드 */
+				    , COMMON_CODE.CMMN_CODE_GROUPNM					/* 공통코드그룹 */
+				    , COMMON_CODE.CMMN_CODE_NM						/* 공통코드명 - 카테고리명 */
+				    , COMMON_CODE.USE_AT							/* 사용여부 */
+				    , EMPLOYEES.EMPL_NM								/* 사원이름 */
+				    , EMPLOYEES.EMPL_ID			 					/* 사원아이디 */
+				    , EMPLOYEES.OFCPS_CODE 							/* 직위코드 */
+				    , EMPLOYEES.RSPOFC_CODE 						/* 직책코드 */
+				    , EMPLOYEES.PROFL_PHOTO_COURS 					/* 프로필사진경로 */
+				FROM POST 
+				INNER JOIN BOARD 
+				    ON POST.BBS_NO = BOARD.BBS_NO
+				INNER JOIN COMMON_CODE 
+				    ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+				INNER JOIN EMPLOYEES 
+				    ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+				WHERE 1=1
+					<include refid="searchFrag" />
+				    AND POST.EMPL_NO = #{employeeVO.emplNo} 		/* 사원번호 */
+				    AND POST.OTHBC_AT = 'N'							/* 공개여부(내가 작성한 비공개 게시물 보기) */
+				    AND POST.DELETE_AT = 'N'						/* 삭제여부 */
+				
+				ORDER BY SNTNC_NO DESC
+		    ) A
+		) B
+		WHERE 1=1
+			<![CDATA[
+			AND RNUM >= #{paging.firstRecord}
+			AND RNUM <= #{paging.lastRecord}
+			]]>
+	</select>
+
+
+	
+	<!-- 검색된 게시글 목록의 총 갯수 조회 -->
+	<select id="selectPostCount" resultType="int" parameterType="Map">
+		SELECT COUNT(SNTNC_NO)
+		FROM POST 
+        INNER JOIN BOARD 
+        	ON POST.BBS_NO = BOARD.BBS_NO
+        INNER JOIN COMMON_CODE 
+        	ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+        INNER JOIN EMPLOYEES 
+			ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+		WHERE 1=1 
+			<include refid="searchFrag" />
+        	AND POST.OTHBC_AT = 'Y' 						/* 공개여부 */
+	        AND POST.DELETE_AT = 'N'  						/* 삭제여부 */
+	</select>
+	
+	
+	
+	<!-- 게시글 Map -->
+	<resultMap type="PostVO" id="postVoMap" autoMapping="true">
+		<id property="sntncNo" column="SNTNC_NO" />
+		<association property="commonVO" javaType="CommonVO" autoMapping="true" />
+		<association property="employeeVO" javaType="EmployeeVO" autoMapping="true" />
+		<collection property="attchFileList" javaType="java.util.List" ofType="AttachVO" autoMapping="true" />
+	</resultMap>
+	
+	
+	
+	<!-- 단일 게시글 조회 -->
+	<select id="selectPost" parameterType="int" resultMap="postVoMap">
+		SELECT 
+		      POST.SNTNC_NO   							/* 글번호 */
+		    , POST.BBS_NO     							/* 게시판번호 */
+		    , BOARD.BBS_NM			   					/* 게시판명 */
+		    , POST.EMPL_NO    							/* 사원번호 */
+		    , POST.CTGRY_CODE							/* 카테고리코드 */
+		    , POST.SNTNC_SJ   							/* 글제목 */
+		    , POST.SNTNC_CN                 			/* 글내용 */
+		    , POST.RDCNT      							/* 조회수 */
+		    , POST.ATCH_FILE_NO							/* 통합첨부파일번호 */
+		    , POST.MNGR_AT    							/* 관리자여부 */
+		    , POST.OTHBC_AT   							/* 공개여부 */
+		    , POST.REGIST_DT  							/* 등록일시 */
+		    , POST.UPDDE_DT                 			/* 수정일시 */
+		    , POST.DELETE_AT  							/* 삭제여부 */
+		    , POST.ATCH_FILE_AT   						/* 파일첨부여부 */	
+		    , COMMON_CODE.CMMN_CODE_NM					/* 카테고리명 */
+		    , EMPLOYEES.EMPL_NM							/* 사원명 */
+		    , EMPLOYEES.EMPL_ID			 				/* 사원아이디 */
+		    , EMPLOYEES.OFCPS_CODE 						/* 직위코드 */
+		    , EMPLOYEES.RSPOFC_CODE 					/* 직책코드 */
+		    , EMPLOYEES.PROFL_PHOTO_COURS 				/* 프로필사진경로 */
+		    , TB_ATTACH_FILE.ATCH_FILE_SEQ              /* 첨부파일순번 */
+		    , TB_ATTACH_FILE.BIZ_TYPE                   /* 업무구분(COMMON_CODE : CMMN_CODE_GROPNM = 업무구분 */
+		    , TB_ATTACH_FILE.FILE_PATH                  /* 파일경로 */
+		    , TB_ATTACH_FILE.FILE_NM                    /* 파일명 */
+		    , TB_ATTACH_FILE.SAVE_FILE_NM               /* 저장파일명 */
+		    , TB_ATTACH_FILE.FILE_CONT_TYPE             /* 파일유형 */
+		    , TB_ATTACH_FILE.FILE_SIZE                  /* 파일크기 */
+		    , TB_ATTACH_FILE.FILE_DOWN_CNT              /* 다운횟수 */
+		    , TB_ATTACH_FILE.REG_DATE                   /* 등록일자 */
+		    , TB_ATTACH_FILE.REG_USER_ID                /* 등록자ID */
+		    , TB_ATTACH_FILE.UPD_DATE                   /* 수정일자 */
+		    , TB_ATTACH_FILE.UPD_USER_ID                /* 수정자ID */
+		    , TB_ATTACH_FILE.FILE_SIZE_CONTRACTION      /* 파일크기(축약형) 임시컬럼 */
+		FROM POST
+		INNER JOIN BOARD
+		    ON POST.BBS_NO = BOARD.BBS_NO
+		INNER JOIN COMMON_CODE
+		    ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+		INNER JOIN EMPLOYEES
+		    ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+		LEFT OUTER JOIN TB_ATTACH_FILE
+		    ON POST.ATCH_FILE_NO = TB_ATTACH_FILE.ATCH_FILE_NO
+		WHERE 1=1
+		    /*AND POST.OTHBC_AT = 'Y'*/   				/* 공개여부 */
+		    AND POST.DELETE_AT = 'N'  					/* 삭제여부 */
+		    AND SNTNC_NO = #{postNo}
+	</select>
+	
+	
+	
+	<update id="incrementHit" parameterType="int">
+		UPDATE POST
+		SET
+			POST.RDCNT = POST.RDCNT + 1	/* 조회수 */
+		WHERE
+			POST.SNTNC_NO = #{sntncNo}	/* 글번호 */
+	</update>
+	
+	
+	
+	<!-- 게시글 수정 -->
+	<update id="updatePost" parameterType="PostVO">
+		UPDATE POST
+		SET
+			  POST.CTGRY_CODE = #{ctgryCode}							/* 카테고리코드 */
+			, POST.SNTNC_SJ = #{sntncSj}  								/* 글제목 */
+		    , POST.SNTNC_CN = #{sntncCn}                 				/* 글내용 */
+		    , POST.MNGR_AT = #{mngrAt}  								/* 관리자여부 */
+		    , POST.OTHBC_AT = #{othbcAt} 								/* 공개여부 */
+		    , POST.UPDDE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') /* 수정일시 */
+		WHERE 
+			POST.SNTNC_NO = #{sntncNo}									/* 글번호 */
+	</update>
+	
+	
+	
+	
+	<!-- 게시글 삭제 -->
+	<update id="deletePost" parameterType="int">
+		UPDATE POST
+		SET
+			  POST.DELETE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS')	/* 삭제일시 */
+			, POST.DELETE_AT = 'Y'											/* 삭제여부 */
+		WHERE 
+			POST.SNTNC_NO = #{sntncNo}										/* 글번호 */
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

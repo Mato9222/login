@@ -1,0 +1,38 @@
+package com.teamtodev.attachfile.service;
+
+import java.io.IOException;
+
+import com.teamtodev.attachfile.vo.AttachVO;
+import com.teamtodev.board.vo.PostVO;
+import com.teamtodev.enumpkg.ServiceResult;
+import com.teamtodev.sanction.vo.SanctionDocVO;
+
+public interface AttachService {
+	
+	/**
+	 * 게시판 - 첨부파일정보 DB 등록 메서드
+	 * @param postVO 게시글 첨부파일 등록
+	 */
+	public int insertAttachFiles(PostVO postVO);
+	
+	/**
+	 * 단일 첨부파일 조회
+	 * @param attachVO 
+	 * @return 
+	 */
+	public AttachVO selectAttach(AttachVO attachVO);
+	
+	/**
+	 * 첨부파일 조회 및 파일획득
+	 * @param attachVO 통합첨부파일번호, 첨부파일순번 값 세팅해줄것
+	 * @return
+	 */
+	public AttachVO downloadAttach(AttachVO attachVO) throws IOException ;
+
+	/**
+	 * 전자결재 - 첨부파일정보 DB 등록 메서드
+	 * @param sancDocVO - 전자결재VO
+	 */
+	public ServiceResult insertSancDocAttachFiles(SanctionDocVO sancDocVO);
+	
+}

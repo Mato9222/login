@@ -1,0 +1,20 @@
+package com.teamtodev.attachfile.service;
+
+import com.teamtodev.attachfile.vo.AttachVO;
+import com.teamtodev.board.vo.PostVO;
+
+public interface AttachService {
+	
+	/**
+	 * 게시판 - 첨부파일정보 DB 등록 메서드
+	 * @param postVO 게시글 첨부파일 등록
+	 */
+	public int insertAttachFiles(PostVO postVO);
+	
+	/**
+	 * 단일 첨부파일 조회
+	 * @param attachVO 
+	 * @return 
+	 */
+	public AttachVO selectAttach(AttachVO attachVO);
+}

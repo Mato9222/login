@@ -1,0 +1,104 @@
+package com.teamtodev.project.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.teamtodev.project.service.ProjectLogService;
+import com.teamtodev.project.service.ProjectWorkService;
+import com.teamtodev.project.vo.ProjectLogVO;
+import com.teamtodev.project.vo.ProjectWorkVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/projectWork")
+public class ProjectWorkController {
+	
+	@Autowired
+	private ProjectWorkService service;
+	
+	@Autowired
+	private ProjectLogService lService;
+	
+	@GetMapping(value="/detailWork/{worksNo}")
+	@ResponseBody
+	public ProjectWorkVO selectDetailWork(@PathVariable int worksNo) {
+		ProjectWorkVO pwVO = service.retrieveProjectWork(worksNo);
+		return pwVO;
+	}
+	
+	@PostMapping(value="/insertWork",produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String insertWork(@RequestBody ProjectWorkVO pwVO) {
+		int cnt = service.createProjectWork(pwVO);
+		
+		if(cnt>0) {
+			ProjectLogVO logVo = new ProjectLogVO();
+			Integer worksNo = pwVO.getWorksNo();
+			log.info("worksNo====>{}",worksNo);
+			String worksNoStr = worksNo.toString();
+			log.info("worksNoStr====>{}",worksNoStr);
+			logVo.setLogClass("일감");
+			logVo.setLogStatus("등록");
+			logVo.setLogConPk(worksNoStr);
+			lService.createLog(logVo);
+		}
+		
+		return "ok";
+	}
+	
+	@PutMapping(value="/updateWork",produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String updateWork(@RequestBody ProjectWorkVO pwVO) {
+		if(pwVO.getProgrsRt()>0 && pwVO.getProgrsRt()<100) {
+			pwVO.setWorkSttusCode("G01");
+		}
+		if(pwVO.getProgrsRt()==100) {
+			pwVO.setWorkSttusCode("G02");
+		}
+		int cnt = service.modifyProjectWork(pwVO);
+		
+		if(cnt>0) {
+			ProjectLogVO logVo = new ProjectLogVO();
+			Integer worksNo = pwVO.getWorksNo();
+			log.info("worksNo====>{}",worksNo);
+			String worksNoStr = worksNo.toString();
+			log.info("worksNoStr====>{}",worksNoStr);
+			logVo.setLogClass("일감");
+			logVo.setLogStatus("수정");
+			logVo.setLogConPk(worksNoStr);
+			lService.createLog(logVo);
+		}
+		return "ok";
+	}
+	
+	@PutMapping(value="/deleteWork/{worksNo}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String deleteWork(@PathVariable int worksNo) {
+		int cnt = service.deleteProjectWork(worksNo);
+		
+		if(cnt>0) {
+			ProjectLogVO logVo = new ProjectLogVO();
+			Integer wrNo = worksNo;
+			log.info("worksNo====>{}",worksNo);
+			String worksNoStr = wrNo.toString();
+			log.info("worksNoStr====>{}",worksNoStr);
+			logVo.setLogClass("일감");
+			logVo.setLogStatus("삭제");
+			logVo.setLogConPk(worksNoStr);
+			lService.createLog(logVo);
+		}
+		
+		return "ok";
+	}
+}

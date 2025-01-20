@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.documents.mapper.DocumentFormMapper">
+	
+	<select id="documentFormList" resultType="com.teamtodev.documents.vo.DocumentFormVO">
+		SELECT * FROM SAN_DC_FORM
+	</select>
+	
+	<select id="selectDocumentForm" parameterType="String" resultType="com.teamtodev.documents.vo.DocumentFormVO">
+		SELECT * FROM SAN_DC_FROM
+		WHERE DOC_RAISNG_NO = #{docRaisngNo}
+	</select>
+	
+	<insert id="insertDocumentForm" parameterType="com.teamtodev.documents.vo.DocumentFormVO">
+		<selectKey order="BEFORE" resultType="String" keyProperty="docRaisngNo">
+		SELECT
+		'DC-FORM_' || TO_CHAR(SYSDATE, 'YYMMDD') || LPAD(SAN_DOCUMENT_FORM_SEQ.NEXTVAL, 3, '0') FROM DUAL
+		</selectKey>
+			INSERT INTO SAN_DC_FORM (
+			    DOC_RAISNG_NO,
+			    DOOR_SIGN,
+			    DOC_TY,
+			    DOC_CN,
+			    DOC_TY_CODE
+			) VALUES (
+			#{docRaisngNo,jdbcType=VARCHAR}
+			, #{doorSign,jdbcType=VARCHAR}
+			, #{docTy,jdbcType=VARCHAR}
+			, #{docCn,jdbcType=CLOB}
+			, #{docTyCode,jdbcType=VARCHAR}
+			)
+	</insert> 
+	
+	<delete id="deleteDocumentForm" parameterType="String">
+		DELETE
+		FROM SAN_DC_FORM
+		WHERE DOC_RAISNG_NO = #{docRaisngNo}
+	</delete>
+</mapper>

@@ -1,0 +1,31 @@
+package com.teamtodev.referencecenter.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.teamtodev.board.controller.PostReadController;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/referenceCenter")
+public class ReferenceCenterController {
+	
+	/**
+	 * 자료실 목록 화면 이동
+	 * @return
+	 */
+	@GetMapping
+	public String retrieveReferenceCenter() {
+		
+		// 목록에 노출 시킬 \\192.168.142.3\groobear\refCenter\root 경로에 있는거 
+		
+		return "referencecenter/refCenter";
+	}
+	
+	
+	
+	
+}

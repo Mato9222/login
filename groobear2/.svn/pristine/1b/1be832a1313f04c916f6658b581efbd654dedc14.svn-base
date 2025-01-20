@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+
+	<!-- index -->
+	<definition name="index" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/index.jsp"></put-attribute>
+	</definition>
+	<definition name = "project/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/project/{1}.jsp"></put-attribute>
+	</definition>
+	<definition name = "schedule/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/schedule/{1}.jsp"></put-attribute>
+	</definition>
+	<definition name = "reservation/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/reservation/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- member -->
+	<!-- <definition name="board/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/board/{1}.jsp"></put-attribute>
+	</definition> -->
+</tiles-definitions>

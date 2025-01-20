@@ -1,0 +1,69 @@
+package com.teamtodev.sanction.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.teamtodev.enumpkg.ServiceResult;
+import com.teamtodev.sanction.mapper.SanctionDocMapper;
+import com.teamtodev.sanction.vo.SanctionDocVO;
+import com.teamtodev.sanction.vo.SanctionVO;
+
+@Service
+public class SanctionDocServiceImpl implements SanctionDocService{
+
+	@Autowired
+	private SanctionDocMapper mapper;
+	
+	@Override
+	public ServiceResult insertSanctionDoc(SanctionDocVO scDocVO) {
+		return mapper.insertSanctionDoc(scDocVO)>0 ? ServiceResult.OK : ServiceResult.FAIL;
+	}
+
+	@Override
+	public List<SanctionDocVO> SanctionDocList(SanctionDocVO scDocVO) {
+		List<SanctionDocVO> scDocList;
+		scDocList = mapper.SanctionDocList(scDocVO);
+		return scDocList;
+	}
+
+	@Override
+	public SanctionDocVO selectSanctionDoc(String scDocNo) {
+		SanctionDocVO scDocVO = mapper.selectSanctionDoc(scDocNo);
+		return scDocVO;
+	}
+
+	@Override
+	public ServiceResult deleteSanctionDoc(String scDocNo) {
+		return mapper.deleteSanctionDoc(scDocNo) > 0 ? ServiceResult.OK : ServiceResult.FAIL;
+	}
+
+	@Override
+	public List<SanctionDocVO> WaitSanctionDocList(int emplNo) {
+		List<SanctionDocVO> scDocVO;
+		scDocVO = mapper.WaitSanctionDocList(emplNo);
+		return scDocVO;
+	}
+
+	@Override
+	public ServiceResult updateSanctionDocSttus(SanctionDocVO scDocVO) {
+		return mapper.updateSanctionDocSttus(scDocVO) > 0 ? ServiceResult.OK : ServiceResult.FAIL;
+	}
+
+	@Override
+	public ServiceResult updateSanctionDoc(SanctionDocVO scDocVO) {
+		return mapper.updateSanctionDoc(scDocVO) > 0 ? ServiceResult.OK : ServiceResult.FAIL;
+	}
+
+	@Override
+	public List<SanctionDocVO> SanctionDocFinishList(String sttus) {
+		return mapper.SanctionDocFinishList(sttus);
+	}
+
+	@Override
+	public ServiceResult updateSanctionDocURL(SanctionVO scDocVO) {
+		return mapper.updateSanctionDocURL(scDocVO) > 0 ? ServiceResult.OK : ServiceResult.FAIL;
+	}
+
+}

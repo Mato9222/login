@@ -1,0 +1,79 @@
+package com.teamtodev.project.controller;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.teamtodev.employees.vo.EmployeeVO;
+import com.teamtodev.employees.vo.EmployeeVOWrapper;
+import com.teamtodev.project.service.ProjectLogService;
+import com.teamtodev.project.service.ProjectMemberService;
+import com.teamtodev.project.service.ProjectPostService;
+import com.teamtodev.project.vo.ProjectLogVO;
+import com.teamtodev.project.vo.ProjectMemberVO;
+import com.teamtodev.project.vo.ProjectPostVO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/projectPost")
+public class ProjectPostController {
+	
+	@Autowired
+	private ProjectPostService service;
+	
+	@Autowired
+	private ProjectLogService Lservice;
+	
+	@Autowired
+	private ProjectMemberService Mservice;
+	
+	@GetMapping(value="/{prjctCode}/postList",produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public Map<String, List<ProjectPostVO>> selectPostList(@PathVariable String prjctCode){
+		List<ProjectPostVO> ppVO = service.retrieveProjectPostList(prjctCode);
+		return Collections.singletonMap("data", ppVO);
+	}
+	
+	@PostMapping(value="/{prjctCode}/insertPost", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String insertPost(@RequestBody ProjectPostVO ppVO ,@PathVariable String prjctCode, Authentication authentication) {
+		EmployeeVOWrapper wrapper =  (EmployeeVOWrapper) authentication.getPrincipal();
+		EmployeeVO emplVO = wrapper.getRealUser();
+		
+		ProjectMemberVO pmVO = new ProjectMemberVO();
+		pmVO.setEmplNo(emplVO.getEmplNo());
+		pmVO.setPrjctCode(prjctCode);
+		
+		int prjctMbrNo = Mservice.retrieveProjectNumber(pmVO);
+		
+		ppVO.setPrjctMbrNo(prjctMbrNo);
+		
+		int cnt = service.createProjectPost(ppVO);
+		
+		if(cnt>0) {
+			ProjectLogVO logVo = new ProjectLogVO();
+			Integer sntncNo = ppVO.getSntncNo();
+			log.info("sntncNo====>{}",sntncNo);
+			String sntncNoStr = String.valueOf(sntncNo);
+			log.info("worksNoStr====>{}",sntncNoStr);
+			logVo.setLogClass("게시글");
+			logVo.setLogStatus("등록");
+			logVo.setLogConPk(sntncNoStr);
+			Lservice.createLog(logVo);
+		}
+		return "ok";
+	}
+}

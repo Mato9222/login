@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.sanction.mapper.SanctionDocMapper">
+	<resultMap type="SanctionDocVO" id="sanctionDocMap" autoMapping="true">
+		<id property="sanctnDocNo" column="SANCTN_DOC_NO"/>
+		<association property="commVo" javaType="CommonVO">
+			<id property="cmmnCode" column="LAST_SANCTN_STTUS_CODE"/>
+			<result property="cmmnCodeNm" column="LAST_SANCTN_STTUS_NM"/>
+		</association>
+		<association property="emplVo" javaType="EmployeeVO" autoMapping="true">
+			<id property="emplNo" column="DRAFTER_EMPL_NO"/>
+		</association>
+		<collection property="attchFileList" javaType="java.util.List" ofType="AttachVO" autoMapping="true" />
+	</resultMap>
+	
+	<insert id="insertSanctionDoc" parameterType="SanctionDocVO">
+		<selectKey order="BEFORE" resultType="String" keyProperty="sanctnDocNo">
+		select 'GB-SAN_' || TO_CHAR(SYSDATE, 'YYMMDD') || LPAD(SAN_DOCUMENT_SEQ.NEXTVAL, '4', '0') FROM DUAL
+		</selectKey>
+		INSERT INTO SAN_DOCUMENT (
+		    SANCTN_DOC_NO,
+		    DRAFTER_EMPL_NO,
+		    DOC_RAISNG_NO,
+		    SANCTN_SJ,
+		    SANCTN_CN,
+		    LAST_SANCTN_DE,
+		    TMPR_STRE_AT,
+		    LAST_RCVER,
+		    ATCH_FILE_NO,
+		    SANCTN_LINE_NO
+		) VALUES (
+		#{sanctnDocNo,jdbcType=VARCHAR}
+		, #{drafterEmplNo,jdbcType=NUMERIC}
+		, #{docRaisngNo,jdbcType=VARCHAR}
+		, #{sanctnSj,jdbcType=VARCHAR}
+		, #{sanctnCn,jdbcType=CLOB}
+		, #{lastSanctnDe,jdbcType=DATE}
+		, #{tmprStreAt,jdbcType=VARCHAR}
+		, #{lastRcver,jdbcType=NUMERIC}
+		, #{atchFileNo}
+		, #{sanctnLineNo}
+		)
+	</insert>
+	
+	<select id="SanctionDocList" parameterType="SanctionDocVO" resultType="SanctionDocVO">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN
+		FROM
+		    SAN_DOCUMENT SD
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+		WHERE SD.DRAFTER_EMPL_NO = #{drafterEmplNo,jdbcType=NUMERIC}	
+		AND SD.TMPR_STRE_AT = #{tmprStreAt,jdbcType=VARCHAR}
+		AND SD.LAST_SANCTN_STTUS_CODE != 'J03'
+		ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<select id="SanctionDocFinish" parameterType="SanctionDocVO" resultType="SanctionDocVO">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN
+		FROM
+		    SAN_DOCUMENT SD
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+		WHERE SD.DRAFTER_EMPL_NO = #{drafterEmplNo,jdbcType=NUMERIC}	
+		AND SD.TMPR_STRE_AT = #{tmprStreAt,jdbcType=VARCHAR}
+		AND SD.LAST_SANCTN_STTUS_CODE = 'J03'
+		ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<select id="SanctionDocFinishList" parameterType="String" resultMap="sanctionDocMap">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN,
+            EMPL.EMPL_NM,
+            DP.DEPT_NM
+		FROM
+		    SAN_DOCUMENT SD
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+        LEFT JOIN EMPLOYEES EMPL ON (SD.DRAFTER_EMPL_NO = EMPL.EMPL_NO)
+        LEFT JOIN DEPARTMENT DP ON (DP.DEPT_NO = EMPL.DEPT_NO)
+		WHERE SD.LAST_SANCTN_STTUS_CODE = #{lastSanctnSttusCode,jdbcType=VARCHAR}
+		ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<select id="SanctionDocRcverList" parameterType="SanctionDocVO" resultMap="sanctionDocMap">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN,
+            EMPL.EMPL_NM,
+            DP.DEPT_NM
+		FROM
+		    SAN_DOCUMENT SD
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+        LEFT JOIN EMPLOYEES EMPL ON (SD.DRAFTER_EMPL_NO = EMPL.EMPL_NO)
+        LEFT JOIN DEPARTMENT DP ON (DP.DEPT_NO = EMPL.DEPT_NO)
+		WHERE SD.LAST_SANCTN_STTUS_CODE = #{lastSanctnSttusCode,jdbcType=VARCHAR}
+		AND SD.LAST_RCVER = #{lastRcver,jdbcType=NUMERIC}
+		ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<select id="SanctionDocRefList" parameterType="SanctionDocVO" resultMap="sanctionDocMap">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN,
+            EMPL.EMPL_NM,
+            DP.DEPT_NM
+		FROM
+		    SAN_DOCUMENT SD
+        LEFT JOIN SAN_LINE_FAVORITES SLF ON (SD.SANCTN_LINE_NO = SLF.SANCTN_LINE_NO)
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+        LEFT JOIN EMPLOYEES EMPL ON (SD.DRAFTER_EMPL_NO = EMPL.EMPL_NO)
+        LEFT JOIN DEPARTMENT DP ON (DP.DEPT_NO = EMPL.DEPT_NO)
+		WHERE SD.LAST_SANCTN_STTUS_CODE = #{lastSanctnSttusCode,jdbcType=VARCHAR}
+		AND SLF.SANCTN_EMPL_NO = #{sanctnEmplNo,jdbcType=NUMERIC} AND SLF.SANCTN_SORTATE = '참조'
+		ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<select id="selectSanctionDoc" parameterType="String" resultMap="sanctionDocMap">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.SANCTN_CN,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+            SD.ATCH_FILE_NO,
+            SD.SANCTN_LINE_NO,
+            TF.ATCH_FILE_NO,
+            TF.ATCH_FILE_SEQ,
+            TF.BIZ_TYPE,
+            TF.FILE_PATH,
+            TF.FILE_NM,
+            TF.SAVE_FILE_NM,
+            TF.FILE_CONT_TYPE,
+            TF.FILE_SIZE,
+            TF.FILE_DOWN_CNT,
+            TF.REG_DATE,
+            TF.REG_USER_ID,
+            TF.UPD_DATE,
+            TF.UPD_USER_ID,
+            TF.FILE_SIZE_CONTRACTION
+		FROM
+		    SAN_DOCUMENT SD LEFT OUTER JOIN TB_ATTACH_FILE TF ON (SD.ATCH_FILE_NO = TF.ATCH_FILE_NO)
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}     
+	</select>
+	
+	<select id="WaitSanctionDocList" parameterType="int" resultType="SanctionDocVO">
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+		    SF.DOOR_SIGN
+		FROM SAN_DOCUMENT SD
+		LEFT JOIN SANCTION SC ON SC.SANCTN_DOC_NO = SD.SANCTN_DOC_NO
+		LEFT JOIN COMMON_CODE CC ON CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE
+		LEFT JOIN SAN_DC_FORM SF ON SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO
+		WHERE SC.SANCTN_EMPL_NO = #{sanctnEmplNo,jdbcType=NUMERIC}
+		  AND SC.SANCTN_STTUS_CODE = 'J01'
+		  AND SD.TMPR_STRE_AT = 'N'
+		  AND (
+		    (SC.SANCTN_ORDR = 1)
+		    OR (SC.SANCTN_ORDR > 1 AND EXISTS (
+		      SELECT 1
+		      FROM SANCTION SC2
+		      WHERE SC2.SANCTN_DOC_NO = SC.SANCTN_DOC_NO
+		        AND SC2.SANCTN_ORDR = SC.SANCTN_ORDR - 1
+		        AND SC2.SANCTN_STTUS_CODE = 'J03'
+		    ))
+		  )
+		  ORDER BY SD.RECOM_DE DESC
+	</select>
+	
+	<update id="updateSanctionDocSttus" parameterType="SanctionDocVO">
+		UPDATE SAN_DOCUMENT
+		    SET
+		        LAST_SANCTN_STTUS_CODE = #{lastSanctnSttusCode,jdbcType=VARCHAR},
+		        LAST_SANCTN_DE = #{lastSanctnDe,jdbcType=DATE}
+		WHERE
+		    SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deleteSanctionDoc" parameterType="String">
+		DELETE
+		FROM SAN_DOCUMENT
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+	</delete>
+	
+	<update id="updateSanctionDoc" parameterType="SanctionDocVO">
+		UPDATE SAN_DOCUMENT
+		SET 
+		SANCTN_SJ = #{sanctnSj,jdbcType=VARCHAR}
+		, SANCTN_CN = #{sanctnCn,jdbcType=CLOB}
+		, LAST_SANCTN_STTUS_CODE = #{lastSanctnSttusCode,jdbcType=VARCHAR}
+		, TMPR_STRE_AT = #{tmprStreAt,jdbcType=VARCHAR}
+		, RECOM_DE = SYSDATE
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}	
+	</update>
+	
+	<update id="updateSanctionDocURL" parameterType="SanctionVO">
+		UPDATE SAN_DOCUMENT
+		SET 
+		SANCTN_CN = #{sanctnCn,jdbcType=CLOB}
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}	
+	</update>
+</mapper>
+

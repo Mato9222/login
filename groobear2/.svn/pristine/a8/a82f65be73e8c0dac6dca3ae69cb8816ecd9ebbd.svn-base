@@ -1,0 +1,29 @@
+package com.teamtodev.board.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.teamtodev.board.service.PostService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/board/{bbsNo}")
+public class PostDeleteController {
+
+	@Autowired
+	private PostService postService; // 게시글 서비스
+	
+	@DeleteMapping("/{sntncNo}/delete")
+	private String postDelete(@PathVariable int boardNo, @PathVariable int postNo, Model model) {
+		
+		return "";
+	}
+	
+	
+}

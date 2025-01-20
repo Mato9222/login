@@ -1,0 +1,26 @@
+package com.teamtodev.project.vo;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(of = "worksNo")
+public class ProjectWorkVO {
+	private int worksNo;
+	private Integer upWorksNo;
+	private String worksTitle;
+	private String worksCon;
+	private int prjctMbrNo;
+	private int prjctMbrNo2;
+	private String workSttusCode;
+	private String bgnde;
+	private String closOn;
+	private int worksOrd;
+	private String atchFileNo;
+	private int progrsRt;
+	private String modide;
+	
+	private String emplNm1;
+	private String emplNm2;
+	private String prjctCode;
+}

@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.mail.mapper.MailListMapper">
+
+	<resultMap type="com.teamtodev.mail.vo.MailVO" id="mailMap" autoMapping="true">
+		<id property="emailNo" column="EMAIL_NO"/>
+			<collection property="emp" ofType="com.teamtodev.employees.vo.EmployeeVO" javaType="java.util.List" autoMapping="true">
+				<id property="emplNo" column="EMPL_NO"/>
+			</collection>
+			<collection property="com" ofType="com.teamtodev.common.vo.CommonVO" javaType="java.util.List" autoMapping="true">
+				<id property="cmmnCode" column="CMMN_CODE"/> 
+			</collection>
+			<collection property="rec" ofType="com.teamtodev.mail.vo.RecipientsVO" javaType="java.util.List" autoMapping="true"/>
+			<collection property="attchFileList" ofType="com.teamtodev.attachfile.vo.AttachVO" javaType="java.util.List" autoMapping="true"/>
+	</resultMap>
+<!-- 메일 보내기 -->
+	<insert id="insertMail" parameterType="MailVO">
+		INSERT INTO EMAIL 
+			(
+				EMAIL_NO 			<!-- 이메일 번호 -->
+	            ,EMPL_NO 			<!-- 직원사원번호 -->	
+	            ,RECPTN_EMAIL_ADRES <!-- 이메일 주소 -->
+	            ,REFRN				<!-- 참조 주소 -->
+	            ,EMAIL_SJ           <!-- 이메일 제목-->
+	            ,EMAIL_CN           <!-- 이메일 내용-->
+	            ,NCRD               <!-- 명함이미지 -->
+	            ,TRNSMIS_DT         <!-- 보낸 일시 -->
+	            ,ATCH_FILE_NO       <!-- 공통코드 파일번호 -->
+	            ,RSVDE_HOUR         <!-- 예약 일시 -->
+			)
+		VALUES 
+			(
+				MAIL_SEQ.NEXTVAL
+				, #{emplNo} 
+				, #{recptnEmailAdres}
+	            , #{refrn}
+	            , #{emailSj}
+	            , #{emailCn}
+	            , #{ncrd}
+	            , sysdate
+	            , #{atchFileNo}
+	            , #{rsvdeHour}
+			)
+	</insert>
+<!-- 	받는사람 저장 -->
+	<insert id="insertMailR"> 
+		INSERT INTO RECIPIENTS (RECE_NO, EMPL_NO, EMAIL_NO) 
+		VALUES (rece_seq.NEXTVAL, #{recptnEmailAdres}, (SELECT MAX(EMAIL_NO) FROM EMAIL))
+	</insert>
+	
+<!-- 	받은메일함 리스트 -->
+	<select id="selectMailList" resultMap="mailMap" parameterType="map">
+		WITH POSITION AS
+	      (
+	          select 
+					 C.CMMN_CODE            <!-- 코드번호 -->
+	                  , C.CMMN_CODE_NM      <!-- 코드 상세 이름 -->
+                      , E.PROFL_PHOTO_COURS <!-- 회원 이미지 -->
+	                  , E.EMPL_NO           <!-- 회원 사번 -->
+	                  , E.EMPL_NM           <!-- 회원 이름 -->    
+	          FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+	      ),
+	     READ_MAIL AS (
+	            SELECT 
+		            D.EMAIL_NO              <!-- 이메일 번호 -->  
+		            ,D.EMPL_NO               <!-- 회원 사원번호 --> 
+		            ,D.RECPTN_EMAIL_ADRES   <!-- 회원 이메일 주소 --> 
+		            ,D.REFRN                <!-- 회원 참조 주소 --> 
+		            ,D.EMAIL_SJ             <!-- 이메일 제목 --> 
+		            ,D.EMAIL_CN             <!-- 이메일 내용 --> 
+		            ,D.NCRD                 <!-- 사원 명함 --> 
+		            ,D.TRNSMIS_DT           <!-- 예약 일시 -->
+		            ,D.ATCH_FILE_NO         <!-- 첨부 파일 -->
+		            ,F.EMPL_NO AS READ_EMPL <!-- 수신테이블-받는사원(참조) 사번 -->
+		            ,F.RECE_NO              <!-- 받는 번호 -->
+		            ,F.READ_TIME            <!-- 읽은시간 -->
+		            ,F.DEL_CODE             <!-- 삭제여부 --> 
+	            FROM EMAIL D INNER JOIN RECIPIENTS F ON(D.EMAIL_NO = F.EMAIL_NO)
+	        )
+	      SELECT  
+	      		a.EMAIL_NO
+                , b.EMPL_NM
+                , b.CMMN_CODE_NM
+                , b.PROFL_PHOTO_COURS
+                , a.EMPL_NO as empl
+                , a.RECPTN_EMAIL_ADRES
+                , a.REFRN
+                , a.EMAIL_SJ
+                , a.EMAIL_CN
+                , a.NCRD
+                , a.TRNSMIS_DT
+                , a.ATCH_FILE_NO
+                , a.READ_EMPL
+                , a.RECE_NO
+                , a.READ_TIME
+	       FROM READ_MAIL a LEFT OUTER JOIN POSITION b ON(a.EMPL_NO = b.EMPL_NO)
+	      WHERE READ_EMPL = #{recptnEmailAdres}
+	        AND a.DEL_CODE = 'N'
+	      ORDER BY EMAIL_NO DESC
+	</select>
+	
+<!-- 	메일 상세보기 -->
+	<select id="selectMail" resultMap="mailMap" parameterType="int">
+<!-- 		WITH POSITION AS(  -->
+<!-- 		    select   -->
+<!-- 		    	C.CMMN_CODE            코드번호 -->
+<!--                  , C.CMMN_CODE_NM      코드 상세 이름 -->
+<!--                  , E.PROFL_PHOTO_COURS 회원 이미지 -->
+<!--                  , E.EMPL_NO           회원 사번 -->
+<!--                  , E.EMPL_NM           회원 이름     -->
+<!-- 		    FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE) -->
+<!-- 		),  -->
+<!-- 		RIPMAIL AS ( -->
+<!-- 		    SELECT  -->
+<!-- 		        a.RECE_NO                 -->
+<!-- 		        , a.EMPL_NO               -->
+<!-- 		        , a.EMAIL_NO              -->
+<!-- 		        , a.READ_TIME             -->
+<!-- 		        , a.DEL_CODE              -->
+<!-- 		        , b.EMPL_NO AS SEND_EMPL  -->
+<!-- 		        , b.RECPTN_EMAIL_ADRES    -->
+<!-- 		        , b.REFRN                 -->
+<!-- 		        , b.EMAIL_SJ              -->
+<!-- 		        , b.EMAIL_CN              -->
+<!-- 		        , b.NCRD                  -->
+<!-- 		        , b.TRNSMIS_DT            -->
+<!-- 		        , b.ATCH_FILE_NO  -->
+<!-- 		    FROM RECIPIENTS a right OUTER JOIN EMAIL b ON(a.EMAIL_NO = B.EMAIL_NO) -->
+<!-- 		) -->
+<!-- 		SELECT a.RECE_NO -->
+<!-- 		        , a.EMPL_NO  -->
+<!-- 		        , a.EMAIL_NO  -->
+<!-- 		        , a.READ_TIME -->
+<!-- 		        , a.DEL_CODE  -->
+<!-- 		        , a.SEND_EMPL -->
+<!-- 		        , a.RECPTN_EMAIL_ADRES  -->
+<!-- 		        , a.REFRN  -->
+<!-- 		        , a.EMAIL_SJ  -->
+<!-- 		        , a.EMAIL_CN  -->
+<!-- 		        , a.NCRD   -->
+<!-- 		        , a.TRNSMIS_DT  -->
+<!-- 		        , a.ATCH_FILE_NO -->
+<!-- 		        , b.CMMN_CODE -->
+<!-- 		        , b.CMMN_CODE_NM -->
+<!-- 		        , b.PROFL_PHOTO_COURS -->
+<!-- 		        , b.EMPL_NO -->
+<!-- 		        , b.EMPL_NM -->
+<!-- 		  FROM RIPMAIL a LEFT OUTER JOIN POSITION b ON (a.EMPL_NO = b.EMPL_NO) -->
+<!-- 		 WHERE RECE_NO = #{RECE_NO} -->
+
+<!-- 			SELECT -->
+<!-- 				  B.EMPL_NM -->
+<!-- 				, (SELECT CMMN_CODE_NM FROM COMMON_CODE X WHERE X.CMMN_CODE_GROUPNM = '직위' AND X.CMMN_CODE = B.OFCPS_CODE) AS OFCPS_CODE_NM -->
+<!-- 				, B.PROFL_PHOTO_COURS -->
+<!-- 				, A.EMAIL_NO -->
+<!-- 				, A.EMPL_NO , A.RECPTN_EMAIL_ADRES , A.REFRN -->
+<!-- 				, A.EMAIL_SJ -->
+<!-- 				, A.EMAIL_CN -->
+<!-- 				, A.TRNSMIS_DT -->
+<!-- 				, A.TMPR_STRE_AT -->
+<!-- 				, A.DELETE_AT -->
+<!-- 				, A.ATCH_FILE_NO -->
+<!-- 				, C.ATCH_FILE_NO -->
+<!-- 				, C.ATCH_FILE_SEQ, C.BIZ_TYPE, C.FILE_PATH -->
+<!-- 				, C.FILE_NM, C.SAVE_FILE_NM, C.FILE_CONT_TYPE, C.FILE_SIZE, C.FILE_DOWN_CNT, C.REG_DATE -->
+<!-- 				, C.REG_USER_ID, C.UPD_DATE, C.UPD_USER_ID, C.FILE_SIZE_CONTRACTION -->
+<!-- 			FROM EMPLOYEES B, EMAIL A LEFT OUTER JOIN TB_ATTACH_FILE C ON (C.ATCH_FILE_NO = A.ATCH_FILE_NO) -->
+<!-- 			WHERE A.EMPL_NO = B.EMPL_NO  -->
+<!-- 			AND A.EMAIL_NO = #{emailNo} -->
+			
+			WITH MAILASD AS (
+			    SELECT a.RECE_NO
+			    , a.REAL_EMAIL
+			    , a.READ_TIME
+			    , a.DEL_CODE
+			    , b.EMAIL_NO
+			    , b.EMPL_NO
+			    , b.RECPTN_EMAIL_ADRES
+			    , b.REFRN
+			    , b.EMAIL_SJ
+			    , b.EMAIL_CN
+			    , b.NCRD
+			    , b.TRNSMIS_DT
+			    , b.TMPR_STRE_AT
+			    , b.DELETE_AT
+			    , b.ATCH_FILE_NO
+			    , b.RSVDE_HOUR
+			    FROM RECIPIENTS a right OUTER JOIN EMAIL b ON(a.EMAIL_NO = B.EMAIL_NO)
+			)
+			SELECT
+			      B.EMPL_NM
+			    , (SELECT CMMN_CODE_NM FROM COMMON_CODE X WHERE X.CMMN_CODE_GROUPNM = '직위' AND X.CMMN_CODE = B.OFCPS_CODE) AS OFCPS_CODE_NM
+			    , B.PROFL_PHOTO_COURS
+			    , A.EMAIL_NO
+			    , A.RECE_NO
+			    , A.EMPL_NO , A.RECPTN_EMAIL_ADRES , A.REFRN
+			    , A.EMAIL_SJ
+			    , A.EMAIL_CN
+			    , A.TRNSMIS_DT
+			    , A.TMPR_STRE_AT
+			    , A.DELETE_AT
+			    , A.ATCH_FILE_NO
+			    , C.ATCH_FILE_NO
+			    , C.ATCH_FILE_SEQ, C.BIZ_TYPE, C.FILE_PATH
+			    , C.FILE_NM, C.SAVE_FILE_NM, C.FILE_CONT_TYPE, C.FILE_SIZE, C.FILE_DOWN_CNT, C.REG_DATE
+			    , C.REG_USER_ID, C.UPD_DATE, C.UPD_USER_ID, C.FILE_SIZE_CONTRACTION
+			FROM EMPLOYEES B, MAILASD A LEFT OUTER JOIN TB_ATTACH_FILE C ON (C.ATCH_FILE_NO = A.ATCH_FILE_NO)
+			WHERE A.EMPL_NO = B.EMPL_NO 
+			AND A.RECE_NO = #{RECE_NO}
+	</select>
+	
+<!-- 	읽은시간 추가 -->
+	<update id="readTime" parameterType="int">
+		UPDATE RECIPIENTS
+		   SET READ_TIME = SYSDATE
+		 WHERE RECE_NO = #{read_no}
+		   AND READ_TIME is null
+	</update>
+	 
+<!-- 	발신메일 카운트 (left menu) 출력 -->
+	<select id="sendMailCount">
+		SELECT COUNT(*)
+		FROM RECIPIENTS
+		WHERE  EMAIL_NO = #{emailNo}
+	</select>
+	
+<!-- 	발신메일 누구 이외 몇명 표시 -->
+	<select id="sendReadMailCount">
+		SELECT COUNT(*)
+	  	  FROM RECIPIENTS
+		 WHERE READ_TIME IS NOT NULL
+  		   AND EMAIL_NO = #{emailNo}
+	</select>
+	
+<!-- 	수신메일 휴지통으로 -->
+	<update id="trashMail" parameterType="int">
+		UPDATE RECIPIENTS
+		SET DEL_CODE = 'Y'
+		WHERE RECE_NO = #{emailNo}
+	</update>
+	
+<!--  휴지통에서 받은메일함으로 -->
+	<update id="trashCancel" parameterType="int">
+		UPDATE RECIPIENTS
+		SET DEL_CODE = 'N'
+		WHERE RECE_NO = #{emailNo}
+	</update>
+	
+<!-- 	메일 쓰기 -> 임시저장 -->
+	<insert id="tempMail" parameterType="MailVO">
+		INSERT INTO EMAIL 
+			(
+				EMAIL_NO
+	            ,EMPL_NO
+	            ,RECPTN_EMAIL_ADRES
+	            ,REFRN
+	            ,EMAIL_SJ
+	            ,EMAIL_CN
+	            ,NCRD
+	            ,TRNSMIS_DT
+	            ,ATCH_FILE_NO
+	            ,RSVDE_HOUR
+	            ,TMPR_STRE_AT
+			)
+		VALUES 
+			(
+				MAIL_SEQ.NEXTVAL
+				, #{emplNo} 
+				, #{recptnEmailAdres}
+	            , #{refrn}
+	            , #{emailSj}
+	            , #{emailCn}
+	            , #{ncrd}
+	            , sysdate
+	            , #{atchFileNo}
+	            , #{rsvdeHour}
+	            , 'Y'
+			)
+	</insert>
+	
+<!-- 	읽은/안읽은 메일 구분을 위한 쿼리 -->
+	<select id="unReadMail" resultType="RecipientsVO" parameterType="String">
+		SELECT RECE_NO, EMPL_NO, EMAIL_NO, ADBK_NO, READ_TIME, DEL_CODE
+		  FROM RECIPIENTS
+	     WHERE EMPL_NO = #{emplNo}
+	</select>
+	
+	<!-- 	안읽은 받은메일함 리스트 -->
+	<select id="unReadMailList" resultMap="mailMap" parameterType="String">
+		WITH POSITION AS
+	      (
+	          select C.CMMN_CODE            <!-- 코드번호 -->     
+	                  , C.CMMN_CODE_NM      <!-- 코드 상세 이름 --> 
+                      , E.PROFL_PHOTO_COURS <!-- 회원 이미지 -->   
+	                  , E.EMPL_NO           <!-- 회원 사번 -->    
+	                  , E.EMPL_NM           <!-- 회원 이름 -->    
+	          FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+	      ),
+	     READ_MAIL AS (
+	            SELECT 
+	            D.EMAIL_NO,            	<!-- 이메일 번호 -->  
+	            D.EMPL_NO,              <!-- 회원 사원번호 --> 
+	            D.RECPTN_EMAIL_ADRES,   <!-- 회원 이메일 주소 --> 
+	            D.REFRN,                <!-- 회원 참조 주소 --> 
+	            D.EMAIL_SJ,             <!-- 이메일 제목 --> 
+	            D.EMAIL_CN,             <!-- 이메일 내용 --> 
+	            D.NCRD,                 <!-- 사원 명함 --> 
+	            D.TRNSMIS_DT,           <!-- 예약 일시 -->
+	            D.ATCH_FILE_NO,         <!-- 첨부 파일 -->
+	            F.EMPL_NO AS READ_EMPL, <!-- 수신테이블-받는사원(참조) 사번 -->
+	            F.RECE_NO,              <!-- 받는 번호 -->
+	            F.READ_TIME,            <!-- 읽은시간 -->
+	            F.DEL_CODE              <!-- 삭제여부 --> 
+	            FROM EMAIL D INNER JOIN RECIPIENTS F ON(D.EMAIL_NO = F.EMAIL_NO)
+	        )
+	      SELECT  a.EMAIL_NO,
+	                b.EMPL_NM,
+	                b.CMMN_CODE_NM,
+                    b.PROFL_PHOTO_COURS,
+	                a.EMPL_NO as empl,
+	                a.RECPTN_EMAIL_ADRES,
+	                a.REFRN,
+	                a.EMAIL_SJ,
+	                a.EMAIL_CN,
+	                a.NCRD,
+	                a.TRNSMIS_DT,
+	                a.ATCH_FILE_NO,
+                    a.READ_EMPL,
+                    a.RECE_NO,
+                    a.READ_TIME
+	       FROM READ_MAIL a LEFT OUTER JOIN POSITION b ON(a.EMPL_NO = b.EMPL_NO)
+	      WHERE READ_EMPL = #{recptnEmailAdres}
+	        AND a.DEL_CODE = 'N'
+	        AND READ_TIME IS NULL
+	      ORDER BY EMAIL_NO DESC
+	</select>
+	
+<!-- 	보낸메일 리스트 출력 -->
+	<select id="sendMailList" resultMap="mailMap" parameterType="String">
+		WITH POSITION AS
+		      (
+		          select 
+		             C.CMMN_CODE                 
+		              , C.CMMN_CODE_NM      
+		              , E.PROFL_PHOTO_COURS 
+		              , E.EMPL_NO          
+		              , E.EMPL_NM           
+		          FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+		      ),
+		     SEND_MAIL AS (
+		            SELECT 
+		                D.EMAIL_NO               
+		                ,D.EMPL_NO             
+		                ,D.RECPTN_EMAIL_ADRES   
+		                ,D.REFRN                
+		                ,D.EMAIL_SJ            
+		                ,D.EMAIL_CN             
+		                ,D.NCRD                 
+		                ,D.TRNSMIS_DT          
+		                ,D.ATCH_FILE_NO        
+		                ,F.EMPL_NO AS READ_EMPL 
+		                ,F.RECE_NO             
+		                ,F.READ_TIME           
+		                ,F.DEL_CODE   
+		                ,D.DELETE_AT         
+		            FROM EMAIL D right outer JOIN RECIPIENTS F ON(F.EMAIL_NO = D.EMAIL_NO)
+		        )
+		  SELECT  
+		        a.RECE_NO
+		        , a.EMAIL_NO
+		        , b.EMPL_NM
+		        , b.CMMN_CODE_NM
+		        , b.PROFL_PHOTO_COURS
+		        , a.EMPL_NO as EMPL
+		        , a.RECPTN_EMAIL_ADRES
+		        , a.REFRN
+		        , a.EMAIL_SJ
+		        , a.EMAIL_CN
+		        , a.NCRD
+		        , a.TRNSMIS_DT
+		        , a.ATCH_FILE_NO
+		        , a.READ_EMPL
+		        , a.READ_TIME
+		   FROM SEND_MAIL a LEFT OUTER JOIN POSITION b ON(a.READ_EMPL = b.EMPL_NO)
+		  WHERE a.EMPL_NO = #{emplNo}
+		    AND a.DELETE_AT = 'N'
+		  ORDER BY RECE_NO DESC
+	</select>
+	
+<!-- 	수신자(RECIPIENTS) 완전 삭제 -->
+	<delete id="deleteRece" parameterType="String">
+		DELETE RECIPIENTS
+		WHERE EMAIL_NO = #{emailNo}
+	</delete>
+	
+<!-- 	발신메일(email 테이블) 완전 삭제 -->
+	<delete id="deleteMail" parameterType="String">
+		DELETE EMAIL
+		WHERE EMAIL_NO = #{emailNo}
+	</delete>
+	
+<!-- 	휴지통 리스트 -->
+	<select id="trashMailList" resultMap="mailMap" parameterType="map">
+		WITH POSITION AS
+		      (
+		          select 
+						 C.CMMN_CODE            <!-- 코드번호 -->
+		                  , C.CMMN_CODE_NM      <!-- 코드 상세 이름 -->
+	                      , E.PROFL_PHOTO_COURS <!-- 회원 이미지 -->
+		                  , E.EMPL_NO           <!-- 회원 사번 -->
+		                  , E.EMPL_NM           <!-- 회원 이름 -->    
+		          FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+		      ),
+		     READ_MAIL AS (
+		            SELECT 
+			            D.EMAIL_NO              <!-- 이메일 번호 -->  
+			            ,D.EMPL_NO               <!-- 회원 사원번호 --> 
+			            ,D.RECPTN_EMAIL_ADRES   <!-- 회원 이메일 주소 --> 
+			            ,D.REFRN                <!-- 회원 참조 주소 --> 
+			            ,D.EMAIL_SJ             <!-- 이메일 제목 --> 
+			            ,D.EMAIL_CN             <!-- 이메일 내용 --> 
+			            ,D.NCRD                 <!-- 사원 명함 --> 
+			            ,D.TRNSMIS_DT           <!-- 예약 일시 -->
+			            ,D.ATCH_FILE_NO         <!-- 첨부 파일 -->
+			            ,F.EMPL_NO AS READ_EMPL <!-- 수신테이블-받는사원(참조) 사번 -->
+			            ,F.RECE_NO              <!-- 받는 번호 -->
+			            ,F.READ_TIME            <!-- 읽은시간 -->
+			            ,F.DEL_CODE             <!-- 삭제여부 --> 
+		            FROM EMAIL D INNER JOIN RECIPIENTS F ON(D.EMAIL_NO = F.EMAIL_NO)
+		        )
+		      SELECT  
+		      		a.EMAIL_NO
+	                , b.EMPL_NM
+	                , b.CMMN_CODE_NM
+	                , b.PROFL_PHOTO_COURS
+	                , a.EMPL_NO as empl
+	                , a.RECPTN_EMAIL_ADRES
+	                , a.REFRN
+	                , a.EMAIL_SJ
+	                , a.EMAIL_CN
+	                , a.NCRD
+	                , a.TRNSMIS_DT
+	                , a.ATCH_FILE_NO
+	                , a.READ_EMPL
+	                , a.RECE_NO
+	                , a.READ_TIME
+		       FROM READ_MAIL a LEFT OUTER JOIN POSITION b ON(a.EMPL_NO = b.EMPL_NO)
+		      WHERE READ_EMPL = #{recptnEmailAdres}
+		        AND a.DEL_CODE = 'Y'
+		      ORDER BY EMAIL_NO DESC
+	</select>
+	
+<!-- 	임시메일 리스트 출력 -->
+	<select id="tempMailList" resultMap="mailMap" parameterType="map">
+		WITH POSITION AS (
+		    SELECT 
+		        C.CMMN_CODE,                 
+		        C.CMMN_CODE_NM,      
+		        E.PROFL_PHOTO_COURS, 
+		        E.EMPL_NO,          
+		        E.EMPL_NM           
+		    FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON (E.RSPOFC_CODE = C.CMMN_CODE)
+		),
+		SEND_MAIL AS (
+		    SELECT 
+		        D.EMAIL_NO,               
+		        D.EMPL_NO AS SENDER_EMPL_NO,             
+		        D.RECPTN_EMAIL_ADRES,   
+		        D.REFRN,                
+		        D.EMAIL_SJ,            
+		        D.EMAIL_CN,             
+		        D.NCRD,                 
+		        D.TRNSMIS_DT,          
+		        D.ATCH_FILE_NO,        
+		        F.EMPL_NO AS READ_EMPL, 
+		        F.RECE_NO,             
+		        F.READ_TIME,           
+		        F.DEL_CODE,     
+		        D.TMPR_STRE_AT
+		    FROM EMAIL D LEFT OUTER JOIN RECIPIENTS F ON (F.EMAIL_NO = D.EMAIL_NO)
+		)
+		SELECT  
+		    a.RECE_NO,
+		    a.EMAIL_NO,
+		    b.EMPL_NM,
+		    b.CMMN_CODE_NM,
+		    b.PROFL_PHOTO_COURS,
+		    a.SENDER_EMPL_NO AS EMPL,
+		    a.RECPTN_EMAIL_ADRES,
+		    a.REFRN,
+		    a.EMAIL_SJ,
+		    a.EMAIL_CN,
+		    a.NCRD,
+		    a.TRNSMIS_DT,
+		    a.ATCH_FILE_NO,
+		    a.READ_EMPL,
+		    a.READ_TIME,
+		    a.TMPR_STRE_AT
+		FROM SEND_MAIL a LEFT OUTER JOIN POSITION b ON (a.READ_EMPL = b.EMPL_NO)
+		WHERE a.SENDER_EMPL_NO = #{recptnEmailAdres}
+		AND A.TMPR_STRE_AT = 'Y'
+		ORDER BY TRNSMIS_DT DESC
+	</select>
+	
+<!-- 	임시메일 읽기 -->
+	<select id="tempReadMail" resultMap="mailMap" parameterType="int">
+		WITH POSITION AS( 
+		    select  
+		    	C.CMMN_CODE            <!-- 코드번호 -->
+                 , C.CMMN_CODE_NM      <!-- 코드 상세 이름 -->
+                 , E.PROFL_PHOTO_COURS <!-- 회원 이미지 -->
+                 , E.EMPL_NO           <!-- 회원 사번 -->
+                 , E.EMPL_NM           
+		    FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+		),
+		RIPMAIL AS (
+		    SELECT               
+		        a.EMPL_NO              
+		        , a.EMAIL_NO             
+		        , a.READ_TIME            
+		        , a.DEL_CODE             
+		        , b.EMPL_NO AS SEND_EMPL 
+		        , b.RECPTN_EMAIL_ADRES   
+		        , b.REFRN                
+		        , b.EMAIL_SJ             
+		        , b.EMAIL_CN             
+		        , b.NCRD                 
+		        , b.TRNSMIS_DT           
+		        , b.ATCH_FILE_NO 
+		    FROM EMAIL b INNER JOIN RECIPIENTS a ON(a.EMAIL_NO = B.EMAIL_NO)
+		)
+		SELECT A.EMAIL_NO
+                , A.EMPL_NO
+                , A.RECPTN_EMAIL_ADRES
+                , A.REFRN
+                , A.EMAIL_SJ
+                , A.EMAIL_CN
+                , A.NCRD
+                , A.TRNSMIS_DT
+                , A.ATCH_FILE_NO
+                , A.RSVDE_HOUR
+		        , b.CMMN_CODE
+		        , b.CMMN_CODE_NM
+		        , b.PROFL_PHOTO_COURS
+		        , b.EMPL_NO AS EMPL
+		        , b.EMPL_NM
+		  FROM EMAIL a LEFT OUTER JOIN POSITION b ON (a.EMPL_NO = b.EMPL_NO)
+		 WHERE EMAIL_NO = #{emailNo}
+	</select>
+	
+<!-- 	임시메일에서 보낼때 -->
+	<update id="updateMail" parameterType="MailVO">
+		UPDATE EMAIL
+		   SET 
+			   RECPTN_EMAIL_ADRES = #{recptnEmailAdres}
+			   , REFRN = #{refrn}
+			   , EMAIL_SJ = #{emailSj}
+			   , EMAIL_CN = #{emailCn}
+			   , NCRD = #{ncrd}
+			   , TRNSMIS_DT = SYSDATE
+			   , TMPR_STRE_AT = 'N'
+			   , ATCH_FILE_NO = #{atchFileNo}
+			   , RSVDE_HOUR = '' 
+		   WHERE EMAIL_NO = #{emailNo}
+	</update>
+	
+<!-- 	발신함(email 테이블) 삭제 여부 -->
+	<update id="outBoxDel" parameterType="int">
+		UPDATE EMAIL
+		   SET DELETE_AT = 'Y'
+		 WHERE EMAIL_NO = #{emailNo}
+	</update>
+	
+	<update id="tempSaveMail" parameterType="MailVO">
+		UPDATE EMAIL
+		   SET 
+			   RECPTN_EMAIL_ADRES = #{recptnEmailAdres}
+			   , REFRN = #{refrn}
+			   , EMAIL_SJ = #{emailSj}
+			   , EMAIL_CN = #{emailCn}
+			   , NCRD = #{ncrd}
+			   , TRNSMIS_DT = SYSDATE
+			   , TMPR_STRE_AT = 'Y'
+			   , ATCH_FILE_NO = #{atchFileNo}
+			   , RSVDE_HOUR = '' 
+		   WHERE EMAIL_NO = #{emailNo}
+	</update>
+	
+<!-- 	대쉬보드 컬럼조회 -->
+	<select id="dashMail" parameterType="int" resultMap="mailMap">
+	WITH POSITION AS(
+	          select 
+					 C.CMMN_CODE            
+	                  , C.CMMN_CODE_NM      
+                      , E.PROFL_PHOTO_COURS
+	                  , E.EMPL_NO          
+	                  , E.EMPL_NM          
+	          FROM EMPLOYEES E LEFT JOIN COMMON_CODE C ON(E.RSPOFC_CODE = C.CMMN_CODE)
+        ),
+	     READ_MAIL AS (
+	            SELECT 
+		            D.EMAIL_NO           
+		            ,D.EMPL_NO           
+		            ,D.RECPTN_EMAIL_ADRES   
+		            ,D.REFRN                
+		            ,D.EMAIL_SJ             
+		            ,D.EMAIL_CN             
+		            ,D.NCRD                 
+		            ,D.TRNSMIS_DT           
+		            ,D.ATCH_FILE_NO         
+		            ,F.EMPL_NO AS READ_EMPL 
+		            ,F.RECE_NO              
+		            ,F.READ_TIME            
+		            ,F.DEL_CODE             
+	            FROM EMAIL D INNER JOIN RECIPIENTS F ON(D.EMAIL_NO = F.EMAIL_NO)
+	        )
+	      SELECT ROWNUM 
+                , a.RECE_NO
+                , a.EMAIL_NO
+                , A.EMPL_NM
+                , A.CMMN_CODE_NM
+                , A.PROFL_PHOTO_COURS
+                , a.empl
+                , a.RECPTN_EMAIL_ADRES
+                , a.REFRN
+                , a.EMAIL_SJ
+                , a.NCRD
+                , a.TRNSMIS_DT
+                , a.ATCH_FILE_NO
+                , a.READ_EMPL
+                , a.READ_TIME
+            FROM (
+              SELECT  A.EMAIL_NO
+                    , a.RECE_NO
+                    , b.EMPL_NM
+                    , b.CMMN_CODE_NM
+                    , b.PROFL_PHOTO_COURS
+                    , a.EMPL_NO as empl
+                    , a.RECPTN_EMAIL_ADRES
+                    , a.REFRN
+                    , a.EMAIL_SJ
+                    , a.NCRD
+                    , a.TRNSMIS_DT
+                    , a.ATCH_FILE_NO
+                    , a.READ_EMPL
+                    , a.READ_TIME
+               FROM READ_MAIL a INNER JOIN POSITION b ON(a.EMPL_NO = b.EMPL_NO)
+              WHERE READ_EMPL = #{emailNo}
+                AND a.DEL_CODE = 'N'
+              ORDER BY EMAIL_NO DESC
+              ) A
+        <![CDATA[
+        WHERE ROWNUM<=6
+        ]]>
+	</select>
+</mapper>
+

@@ -1,0 +1,16 @@
+#log4jdbc \uc0ac\uc6a9\uc804
+#driverClassName=oracle.jdbc.OracleDriver
+#url=jdbc:oracle:thin:@localhost:1521/xe
+driverClassName=net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+url=jdbc:log4jdbc:oracle:thin:@112.220.114.130:1521/xe
+user=TEAM2_202311F
+password=ENC(pse05cle3FUCTl26lNjTew==)
+#url=jdbc:log4jdbc:oracle:thin:@localhost:1521/xe
+#user=TESTSJ
+#password=java
+
+maxActive=5
+maxIdle=3
+maxWait=2000
+testQuery=SELECT SYSDATE FROM DUAL
+

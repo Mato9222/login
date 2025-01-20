@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.main.mapper.MainMapper">
+
+	<select id="receMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		  FROM RECIPIENTS
+		 WHERE EMPL_NO = #{emplNo}
+		  AND DEL_CODE = 'N'
+		  AND READ_TIME IS NULL
+	</select>
+	
+	<select id="tempMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		FROM EMAIL 
+		WHERE EMPL_NO = #{emplNo}
+		  AND TMPR_STRE_AT = 'Y'
+	</select>
+	
+	<!-- 게시글 Map -->
+	<resultMap type="PostVO" id="mainPostMap" autoMapping="true">
+		<id property="sntncNo" column="SNTNC_NO" />
+		<association property="employeeVO" javaType="EmployeeVO" autoMapping="true" />
+	</resultMap>
+	
+	<!-- 메인페이지 - 공지사항 목록 출력 -->
+	<select id="mainPost" resultMap="mainPostMap">
+		SELECT B.* 
+			FROM (
+			    SELECT ROWNUM AS RNUM, A.*
+			    FROM (
+			        SELECT 
+			              POST.SNTNC_NO   								/* 글번호 */
+			            , POST.BBS_NO     								/* 게시판번호 */
+			            , BOARD.BBS_NM AS BBS_NM   						/* 게시판명 */
+			            , POST.EMPL_NO    								/* 사원번호 */
+			            , POST.CTGRY_CODE AS CTGRY_CODE					/* 카테고리코드 */
+			            , POST.SNTNC_SJ   								/* 글제목 */
+			            , POST.RDCNT      								/* 조회수 */
+			            , POST.MNGR_AT    								/* 관리자여부 */
+			            , POST.OTHBC_AT   								/* 공개여부 */
+			            , POST.REGIST_DT  								/* 등록일시 */
+			            , POST.DELETE_AT  								/* 삭제여부 */
+			            , POST.ATCH_FILE_AT   							/* 파일첨부여부 */
+			            , COMMON_CODE.CMMN_CODE_NM  AS CMMN_CODE_NM		/* 카테고리명 */
+			            , EMPLOYEES.EMPL_NM								/* 사원명 */
+					    , EMPLOYEES.EMPL_ID			 					/* 사원아이디 */
+					    , EMPLOYEES.OFCPS_CODE 							/* 직위코드 */
+					    , EMPLOYEES.RSPOFC_CODE 						/* 직책코드 */
+					    , EMPLOYEES.PROFL_PHOTO_COURS 					/* 프로필사진경로 */
+			        FROM POST 
+			        INNER JOIN BOARD 
+			        	ON POST.BBS_NO = BOARD.BBS_NO
+			        INNER JOIN COMMON_CODE 
+			        	ON POST.CTGRY_CODE = COMMON_CODE.CMMN_CODE
+			        INNER JOIN EMPLOYEES 
+						ON POST.EMPL_NO = EMPLOYEES.EMPL_NO
+			        WHERE 1=1
+			        	AND POST.BBS_NO = #{bbsNo}
+				        AND POST.OTHBC_AT = 'Y'   						/* 공개여부 */
+				        AND POST.DELETE_AT = 'N'  						/* 삭제여부 */
+				        ORDER BY POST.SNTNC_NO DESC
+			    ) A
+			) B
+			<![CDATA[
+	 		WHERE ROWNUM <= 10
+			]]> 
+	</select>
+	
+	<select id="snacWait" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+        FROM(
+        SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+		    SF.DOOR_SIGN
+		FROM SAN_DOCUMENT SD
+		LEFT JOIN SANCTION SC ON SC.SANCTN_DOC_NO = SD.SANCTN_DOC_NO
+		LEFT JOIN COMMON_CODE CC ON CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE
+		LEFT JOIN SAN_DC_FORM SF ON SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO
+		WHERE SC.SANCTN_EMPL_NO = #{sanctnEmplNo}
+		  AND SC.SANCTN_STTUS_CODE = 'J01'
+		  AND SD.TMPR_STRE_AT = 'N'
+		  AND (
+		    (SC.SANCTN_ORDR = 1)
+		    OR (SC.SANCTN_ORDR > 1 AND EXISTS (
+		      SELECT 1
+		      FROM SANCTION SC2
+		      WHERE SC2.SANCTN_DOC_NO = SC.SANCTN_DOC_NO
+		        AND SC2.SANCTN_ORDR = SC.SANCTN_ORDR - 1
+		        AND SC2.SANCTN_STTUS_CODE = 'J03'
+		    ))
+		  ))
+	</select>
+	
+	<select id="snacTemp" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		FROM (
+		SELECT
+		    SANCTN_DOC_NO,
+		    DRAFTER_EMPL_NO,
+		    DOC_RAISNG_NO,
+		    SANCTN_SJ,
+		    SANCTN_CN,
+		    RECOM_DE,
+		    LAST_SANCTN_DE,
+		    LAST_SANCTN_STTUS_CODE,
+		    TMPR_STRE_AT,
+		    DCRB_USE_AT,
+		    LAST_RCVER,
+		    ATCH_FILE_NO,
+		    SANCTN_LINE_NO
+		FROM
+		    SAN_DOCUMENT
+		    WHERE LAST_RCVER = #{lastRcver}
+		    AND LAST_SANCTN_STTUS_CODE = 'J03')
+	</select>
+
+	<select id="snacComp" parameterType="int" resultType="int">
+SELECT COUNT(*)
+FROM (
+SELECT
+    SANCTN_DOC_NO,
+    DRAFTER_EMPL_NO,
+    DOC_RAISNG_NO,
+    SANCTN_SJ,
+    SANCTN_CN,
+    RECOM_DE,
+    LAST_SANCTN_DE,
+    LAST_SANCTN_STTUS_CODE,
+    TMPR_STRE_AT,
+    DCRB_USE_AT,
+    LAST_RCVER,
+    ATCH_FILE_NO,
+    SANCTN_LINE_NO
+FROM
+    SAN_DOCUMENT
+    WHERE DRAFTER_EMPL_NO = #{drafterEmplNo}
+    AND LAST_SANCTN_STTUS_CODE != 'J03')
+	</select>
+	
+	<select id="snacReje" parameterType="int" resultType="int">
+SELECT COUNT(*)
+FROM (
+		SELECT
+		    SD.SANCTN_DOC_NO,
+		    SD.DRAFTER_EMPL_NO,
+		    SD.DOC_RAISNG_NO,
+		    SD.SANCTN_SJ,
+		    SD.RECOM_DE,
+		    SD.LAST_SANCTN_DE,
+		    SD.LAST_SANCTN_STTUS_CODE,
+		    SD.TMPR_STRE_AT,
+		    SD.DCRB_USE_AT,
+		    SD.LAST_RCVER,
+		    CC.CMMN_CODE_NM AS LAST_SANCTN_STTUS_NM,
+            SF.DOOR_SIGN,
+            EMPL.EMPL_NM,
+            DP.DEPT_NM
+		FROM
+		    SAN_DOCUMENT SD
+        LEFT JOIN SAN_LINE_FAVORITES SLF ON (SD.SANCTN_LINE_NO = SLF.SANCTN_LINE_NO)
+		LEFT JOIN COMMON_CODE CC ON (CC.CMMN_CODE = SD.LAST_SANCTN_STTUS_CODE)
+        LEFT JOIN SAN_DC_FORM SF ON (SD.DOC_RAISNG_NO = SF.DOC_RAISNG_NO)
+        LEFT JOIN EMPLOYEES EMPL ON (SD.DRAFTER_EMPL_NO = EMPL.EMPL_NO)
+        LEFT JOIN DEPARTMENT DP ON (DP.DEPT_NO = EMPL.DEPT_NO)
+		WHERE SD.LAST_SANCTN_STTUS_CODE = 'J03'
+		AND SLF.SANCTN_EMPL_NO = #{sanctnEmplNo,jdbcType=NUMERIC} AND SLF.SANCTN_SORTATE = '참조')
+	</select>
+	
+
+</mapper>

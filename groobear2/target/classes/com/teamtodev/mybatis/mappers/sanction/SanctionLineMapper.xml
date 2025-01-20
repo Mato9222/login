@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.sanction.mapper.SanctionLineMapper">
+	<resultMap type="SanctionLineVO" id="SanctionLineMap" autoMapping="true">
+		<id property="sanctnLineNo" column="SANCTN_LINE_NO"/>
+		<collection property="sclineDetailList" ofType="SanctionLineDetailVO" javaType="java.util.List" autoMapping="true"/>
+	</resultMap>
+	
+	<insert id="insertSanctionLine" parameterType="SanctionLineVO">
+		<selectKey order="BEFORE" resultType="String" keyProperty="sanctnLineNo">
+			SELECT 'SFL' || LPAD(SAN_LINE_FVRT_SEQ.NEXTVAL, 5, '0') AS SANCTION_LINE_ID
+			FROM DUAL
+		</selectKey>
+		INSERT ALL 
+		<foreach collection="sclineDetailList" item="scdt">
+		INTO SAN_LINE_FAVORITES (
+		    SANCTN_LINE_NO,
+		    SANCTN_ORDR,
+		    SANCTN_EMPL_NO,
+		    EMPL_NO,
+		    SANCTN_LN_NM,
+		    SANCTN_SORTATE
+		) VALUES (
+		#{sanctnLineNo,jdbcType=VARCHAR}
+		, #{scdt.sanctnOrdr,jdbcType=NUMERIC}
+		, #{scdt.sanctnEmplNo,jdbcType=NUMERIC}
+		, #{emplNo,jdbcType=NUMERIC}
+		, #{sanctnLnNm,jdbcType=VARCHAR}
+		, #{scdt.sanctnSortate,jdbcType=VARCHAR})
+			
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+	
+	<select id="SanctionLineList" parameterType="int" resultType="SanctionLineVO">
+		SELECT
+		    SANCTN_LINE_NO,
+		    SANCTN_ORDR,
+		    SANCTN_EMPL_NO,
+		    EMPL_NO,
+		    SANCTN_LN_NM,
+		    SANCTN_SORTATE
+		FROM
+		    SAN_LINE_FAVORITES
+		WHERE
+		EMPL_NO = #{emplNo}
+	</select>
+	
+	<delete id="deleteSanctionLine" parameterType="String">
+		DELETE FROM SAN_LINE_FAVORITES
+		WHERE SANCTN_LINE_NO = #{sanctnLineNo}
+	</delete>
+	
+	<select id="selectSanctionLine" parameterType="String" resultMap="SanctionLineMap">
+		SELECT
+		 SAN.SANCTN_LINE_NO,
+		 SAN.EMPL_NO,
+		 SAN.SANCTN_LN_NM,
+		 SAN.SANCTN_ORDR,
+		 SAN.SANCTN_EMPL_NO,
+		 SAN.SANCTN_SORTATE,
+		 EMP.EMPL_NM,
+		 EMP.PROFL_PHOTO_COURS,
+		 EMP.SANCTN_CTPNT_URL,
+         COMM.CMMN_CODE_NM AS OFCPS_CODE,
+         COMM1.CMMN_CODE_NM AS RSPOFC_CODE
+		FROM SAN_LINE_FAVORITES SAN
+		LEFT JOIN EMPLOYEES EMP ON (SAN.SANCTN_EMPL_NO = EMP.EMPL_NO)
+        LEFT JOIN COMMON_CODE COMM ON (EMP.OFCPS_CODE = COMM.CMMN_CODE)
+        LEFT JOIN COMMON_CODE COMM1 ON (EMP.RSPOFC_CODE = COMM1.CMMN_CODE)
+		WHERE SANCTN_LINE_NO = #{sanctnLineNo}	
+		ORDER BY SAN.SANCTN_ORDR		
+	</select>
+
+	<select id="selectSCSanctionLine" parameterType="String" resultMap="SanctionLineMap">
+		SELECT
+		 SAN.SANCTN_LINE_NO,
+		 SAN.EMPL_NO,
+		 SAN.SANCTN_LN_NM,
+		 SAN.SANCTN_ORDR,
+		 SAN.SANCTN_EMPL_NO,
+		 SAN.SANCTN_SORTATE,
+		 EMP.EMPL_NM,
+		 EMP.PROFL_PHOTO_COURS,
+		 EMP.SANCTN_CTPNT_URL,
+         COMM.CMMN_CODE_NM AS OFCPS_CODE,
+         COMM1.CMMN_CODE_NM AS RSPOFC_CODE
+		FROM SAN_LINE_FAVORITES SAN
+		LEFT JOIN EMPLOYEES EMP ON (SAN.SANCTN_EMPL_NO = EMP.EMPL_NO)
+        LEFT JOIN COMMON_CODE COMM ON (EMP.OFCPS_CODE = COMM.CMMN_CODE)
+        LEFT JOIN COMMON_CODE COMM1 ON (EMP.RSPOFC_CODE = COMM1.CMMN_CODE)
+		WHERE SANCTN_LINE_NO = #{sanctnLineNo}	
+		AND SANCTN_SORTATE = '결재'	
+		ORDER BY SAN.SANCTN_ORDR		
+	</select>
+	
+		<select id="selectNonSanctionLine" parameterType="String" resultMap="SanctionLineMap">
+		SELECT
+		 SAN.SANCTN_LINE_NO,
+		 SAN.EMPL_NO,
+		 SAN.SANCTN_LN_NM,
+		 SAN.SANCTN_ORDR,
+		 SAN.SANCTN_EMPL_NO,
+		 SAN.SANCTN_SORTATE,
+		 EMP.EMPL_NM,
+		 EMP.PROFL_PHOTO_COURS,
+		 EMP.SANCTN_CTPNT_URL,
+         COMM.CMMN_CODE_NM AS OFCPS_CODE,
+         COMM1.CMMN_CODE_NM AS RSPOFC_CODE
+		FROM SAN_LINE_FAVORITES SAN
+		LEFT JOIN EMPLOYEES EMP ON (SAN.SANCTN_EMPL_NO = EMP.EMPL_NO)
+        LEFT JOIN COMMON_CODE COMM ON (EMP.OFCPS_CODE = COMM.CMMN_CODE)
+        LEFT JOIN COMMON_CODE COMM1 ON (EMP.RSPOFC_CODE = COMM1.CMMN_CODE)
+		WHERE SANCTN_LINE_NO = #{sanctnLineNo}	
+		AND SANCTN_SORTATE != '결재'
+		ORDER BY SAN.SANCTN_ORDR		
+	</select>
+</mapper>

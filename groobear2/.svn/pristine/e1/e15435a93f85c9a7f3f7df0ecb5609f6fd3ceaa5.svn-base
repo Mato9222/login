@@ -1,0 +1,241 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+    <style>
+        body {
+           font-family: Arial, sans-serif; 
+        } 
+        
+        .address-book {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 150px;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        
+        .sidebar ul li:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .filter {
+            margin-bottom: 10px;
+        }
+        
+        .recipients {
+            display: flex;
+            justify-content: space-between;
+            align-content:center;
+        }
+        
+        .list {
+            width: 50%;
+            height: 612px;   
+            border: 1px solid #ccc;
+            padding : 20px;
+            overflow : auto;
+        }
+        
+        .non-click {
+            width: 50%;
+            height: 275px;   
+            border: 1px solid #ccc;
+            border-left: 0px solid;
+            padding : 20px;
+            overflow : auto;
+        }
+        
+        .selDiv { 
+            border: 1px solid skyblue; 
+        } 
+        
+        .rec-list h3 {
+            margin-top: 0;
+        }
+        
+        .rec-list ul {
+            list-style: none;
+            padding: 0;
+        }
+       
+        .row {
+	        --bs-gutter-x: 1.5rem;
+	        --bs-gutter-y: 0;
+	        display: flex;
+	        flex-wrap: wrap;
+	        margin-top: 0;
+	        margin-right: 0;
+	        margin-left: 0;
+	        padding: 0;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="address-book">
+        <div class="sidebar">
+            <ul>
+                <li class="emplList">직원 주소록</li>
+                <li class="">개인 주소록</li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="filter">
+            </div>
+            <div class="recipients">
+            
+                <div class="list">
+	                <h3>리스트</h3>
+	                <div class="form-check form-check-sm form-check-custom form-check-solid me-4 me-lg-7">
+						<input class="form-check-input" type="checkbox" data-kt-check="true" id="allCheck"
+							data-kt-check-target="#kt_inbox_listing .form-check-input" value="1"> 전체
+					</div>
+	                <div class="address-list">
+		                <div class="empl">
+		                	<!-- 주소록 목록 동적 출력 -->
+		                </div>
+	                </div>
+                </div>
+                
+                <div class="row card-body pb-4 d-flex Sflex-wrap align-items-center">
+                    <div class="row card-body pb-4 d-flex flex-wrap align-items-center"> 
+                   		<h3>받는 사람</h3>
+	                   	<div class="card-body pb-4 flex-wrap align-items-center rec-list non-click" id="recPeople"></div>
+                   		<input type="hidden" id="recHidden" value=""/> 
+ 					</div>
+					<div class="row card-body pb-4 d-flex flex-wrap align-items-center">
+                    	<h3> 참조</h3>
+	                    <div class="card-body pb-4 flex-wrap align-items-center rec-list non-click" id="ccPeople"></div>
+	                    <input type="hidden" id="ccHidden" value=""/> 
+                    </div>
+                </div>
+            </div>
+            <div class="me-4">
+	            <button type="button" class="btn btn-primary fs-bold px-6 indicator-label send" onclick="setParentText()">확인</button>
+	            <span class="btn btn-primary fs-bold px-6 indicator-label send" onclick="window.close()">취소</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+// 사이드리스트에서 목록리스트 출력
+	const nonClick = document.querySelectorAll(".non-click");
+	function handleClick(e) {
+	// 	div에서 모든 "selDiv" 클래스 제거
+		nonClick.forEach((e) => {
+			e.classList.remove("selDiv");
+		});
+	// 	클릭한 div만 "selDiv" 클래스 추가
+		e.target.classList.add("selDiv");
+	}
+	
+	// 자식페이지 받는사람에서 부모페이지 받는사람 and 참조로 넘기는 함수 
+	function setParentText() {
+// 		받는사람 
+		let emplHidden = $("#recHidden").val();
+		let emplValue = $("#recPeople").text();
+// 		참조
+		let ccHidden = $("#ccHidden").val();
+		let ccValue = $("#ccPeople").text();
+		
+		console.log(emplHidden);
+		console.log(emplValue);
+		
+		opener.document.getElementById("emplHidden").value = emplHidden;
+		opener.document.getElementById("pRec").value = emplValue;
+		opener.document.getElementById("ccHidden").value = ccHidden;
+		opener.document.getElementById("pCc").value = ccValue;
+		window.close();
+	}
+	
+	// 데이터 넣을 받는사람 or 참조 선택하기 
+	nonClick.forEach((e) => {
+		e.addEventListener("click", handleClick);
+	});
+	
+	document.addEventListener("DOMContentLoaded", () => {
+	// 	목록리스트에서 받는사람 or 참조 값 보내기
+		$(document).on("change", ".emplSel", function(e) { 
+			if($(this).prop("checked"), true) {
+				let emplName = $(this).find('input[name="chk"]').val();
+// 				let emplName = $(this).find('input[type="checkbox"]').val();
+				let emplNo = $(this).find('input[type="hidden"]').val();
+	
+				let emplValue = $("#recHidden").val();
+				let newValue = emplValue ? emplValue + "," + emplNo : emplNo;
+				
+				console.log("emplName:", emplName);
+				console.log("emplNo:", emplNo);
+				
+				$(".selDiv").append(`\${emplName},<br>`);
+				$("#recHidden").val(newValue);
+			} else {
+				$(".selDiv").empty();
+				$("#recHidden").empty();
+			}
+		})
+	   	
+	//  직원리스트 동적 출력 
+	   	$(".emplList").on("click", function(e) {
+	   		$.ajax({
+	   			url : "/adrs/emplList"
+	   			, method : "get"
+	   			, success : function(res) {
+	   				$(".empl").empty();
+	   				
+					let emplHtml = "";
+					
+	   				res.forEach(emplList => {
+	   					let emplName = emplList.emplNm;
+	   					let emplCmm = emplList.cmmnCodeNm;
+	   					let email = emplList.emailAdres;
+	   					let emplNo = emplList.emplNo;
+	   					
+	   					emplAtt = `\${emplName}(\${emplCmm})`;
+	   					emplValue = `\${emplName}(\${emplCmm}) &lt;\${email}&gt;`;
+	   					
+	   					emplHtml += `
+	   							<div class="form-check form-check-sm form-check-custom form-check-solid mt-3 emplSel">
+			   						<input class="form-check-input" id="emplValue" name="chk" type="checkbox" value="\${emplAtt}" data-empl-nm="\${emplName}"> \${emplValue}
+									<input type="hidden" value="\${emplNo}" id="emplNo">
+								</div>
+							`;
+					})
+					$(".empl").append(emplHtml);
+	   			}
+	   		})
+	   	})
+	   	
+	   	$("#allCheck").on("click", function() {
+	   		let chkList = $("input[name=chk]");
+	   		
+	   		if($("#allCheck").is(":checked")) {
+	   			chkList.prop("checked", true);
+	   		} else {
+	   			chkList.prop("checked", false);
+	   		}
+	   		
+	   	})
+	})
+
+
+</script>

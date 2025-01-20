@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+
+	<!-- index -->
+	<definition name="index" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/index.jsp"></put-attribute>
+	</definition>
+	<!-- mail -->
+	 <definition name="mail/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/mail/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- address -->
+	 <definition name="address/*" extends="parent2">
+		<put-attribute name="content" value="/WEB-INF/jsp/address/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- address -->
+	 <definition name="address/address" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/address/address.jsp"></put-attribute>
+	</definition>
+</tiles-definitions>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+	<definition name="parent" template="/WEB-INF/jsp/templateGB.jsp">
+		<put-attribute name="preScript" value="/WEB-INF/includee/preScript.jsp"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/includee/header.jsp"></put-attribute>
+		<put-attribute name="leftMenu" value="/WEB-INF/includee/leftMenu.jsp"></put-attribute>
+
+		<put-attribute name="footer" value="/WEB-INF/includee/footer.jsp"></put-attribute>
+		<put-attribute name="drawer" value="/WEB-INF/includee/drawer.jsp"></put-attribute>
+		<put-attribute name="scrolltop" value="/WEB-INF/includee/scrolltop.jsp"></put-attribute>
+		<put-attribute name="modal" value="/WEB-INF/includee/modal.jsp"></put-attribute>
+		<put-attribute name="postScript" value="/WEB-INF/includee/postScript.jsp"></put-attribute>
+	</definition>
+	
+	<definition name="parent2" template="/WEB-INF/jsp/templateGB2.jsp">
+		<put-attribute name="preScript" value="/WEB-INF/includee/preScript.jsp"></put-attribute>
+
+		<put-attribute name="drawer" value="/WEB-INF/includee/drawer.jsp"></put-attribute>
+		<put-attribute name="scrolltop" value="/WEB-INF/includee/scrolltop.jsp"></put-attribute>
+		<put-attribute name="modal" value="/WEB-INF/includee/modal.jsp"></put-attribute>
+		<put-attribute name="postScript" value="/WEB-INF/includee/postScript.jsp"></put-attribute>
+	</definition>
+	
+</tiles-definitions>

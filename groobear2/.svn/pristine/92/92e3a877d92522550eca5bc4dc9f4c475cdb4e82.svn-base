@@ -1,0 +1,44 @@
+package com.teamtodev.attendance.controller;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.teamtodev.attendance.service.AttendanceService;
+import com.teamtodev.attendance.vo.AttendanceVO;
+import com.teamtodev.employees.service.EmployeeService;
+import com.teamtodev.employees.vo.EmployeeVO;
+import com.teamtodev.employees.vo.EmployeeVOWrapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequiredArgsConstructor
+@RequestMapping("attendance")
+public class AttendanceController {
+	private final AttendanceService attendanceService;
+	private final EmployeeService employeeService;
+	
+	@GetMapping
+	public String attendance(Model model, Authentication auth) {
+		LocalDate localDate = LocalDate.now();
+		String now = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		EmployeeVOWrapper userWrapper = (EmployeeVOWrapper) auth.getPrincipal();
+		EmployeeVO employeeVO = userWrapper.getRealUser();
+		EmployeeVO empl = employeeService.selectEmployeeById(employeeVO.getEmplId());
+		AttendanceVO attendanceVO = attendanceService.selectAttendanceByDay(empl.getEmplNo(), now);
+		List<AttendanceVO> attendanceList = attendanceService.selectAttendance(empl.getEmplNo());
+		model.addAttribute("empl", empl);
+		model.addAttribute("attendanceVO", attendanceVO);
+		model.addAttribute("attendanceList", attendanceList);
+		return "/attendance/attendance";
+	}	
+}

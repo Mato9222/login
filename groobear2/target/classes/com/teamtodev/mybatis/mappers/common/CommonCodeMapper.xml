@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.common.mapper.CommonMapper">
+	
+	<!-- 공통코드 목록 조회 -->
+	<select id="selectCommonList">
+		  SELECT CMMN_CODE, CMMN_CODE_NM, CMMN_CODE_DC_CN
+    		FROM COMMON_CODE
+   		 WHERE CMMN_CODE_GROUPNM = #{cmmnCodeGroupnm}
+	</select>
+	
+	<!-- 단일공통코드 조회 -->
+	<select id="selectBizTypeCode" resultType="String" parameterType="String">
+		SELECT COMMON_CODE.CMMN_CODE
+		FROM COMMON_CODE
+		WHERE 1=1
+		AND COMMON_CODE.CMMN_CODE_GROUPNM = '업무구분'
+		AND COMMON_CODE.CMMN_CODE_NM = #{cmmnCodeNm}
+	</select>
+</mapper>

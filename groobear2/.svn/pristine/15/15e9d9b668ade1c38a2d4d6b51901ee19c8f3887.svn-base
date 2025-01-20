@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.attachfile.mapper.AttachMapper">
+	
+	
+	<!-- 첨부파일 등록 -->
+	<insert id="insertAttach">
+		<selectKey order="BEFORE" resultType="String" keyProperty="atchFileNo">
+			SELECT 
+			    'AT' || LPAD(NVL(MAX(SUBSTR(ATCH_FILE_NO, 3)), 0) + 1, 10, 0) 
+			FROM TB_ATTACH_FILE
+		</selectKey>
+			/* com.teamtodev.attachfile.mapper.AttachMapper.selectAttach */
+			INSERT ALL
+		<foreach collection="attchFileList" item="item" index="idx">
+			INTO TB_ATTACH_FILE(
+				  ATCH_FILE_NO 				/* 통합첨부파일번호 */
+				, ATCH_FILE_SEQ 			/* 첨부파일순번 */
+				, BIZ_TYPE 					/* 업무구분(COMMON_CODE : CMMN_CODE_GROPNM = 업무구분 */
+				, FILE_PATH 				/* 파일경로 */
+				, FILE_NM 					/* 파일명 */
+				, SAVE_FILE_NM 				/* 저장파일명 */
+				, FILE_CONT_TYPE 			/* 파일유형 */
+				, FILE_SIZE 				/* 파일크기 */
+				, REG_DATE 					/* 등록일자 */
+				, REG_USER_ID 				/* 등록자ID */
+				, FILE_SIZE_CONTRACTION 	/* 파일크기(축약형) 임시컬럼 */
+				, WRITING_NO				/* 글번호 */
+			)
+			VALUES (
+				  #{atchFileNo} 							/* 통합첨부파일번호 */
+				, #{idx} 									/* 첨부파일순번 */
+				, #{item.bizType} 							/* 업무구분(COMMON_CODE : CMMN_CODE_GROPNM = 업무구분 */
+				, #{item.filePath} 							/* 파일경로 */
+				, #{item.fileNm} 							/* 파일명 */
+				, #{item.saveFileNm} 						/* 저장파일명 */
+				, #{item.fileContType} 						/* 파일유형 */
+				, #{item.fileSize} 							/* 파일크기 */
+				, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') /* 등록일자 */
+				, #{item.regUserId} 						/* 등록자ID */
+				, #{item.fileSizeContraction}				/* 파일크기(축약형) 임시컬럼 */
+				, #{writingNo}								/* 글번호 */
+			)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+	<sql id="atchSelectFrag">
+		      ATCH_FILE_NO         
+		    , ATCH_FILE_SEQ        
+		    , BIZ_TYPE             
+		    , FILE_PATH            
+		    , FILE_NM              
+		    , SAVE_FILE_NM         
+		    , FILE_CONT_TYPE       
+		    , FILE_SIZE            
+		    , FILE_DOWN_CNT        
+		    , REG_DATE             
+		    , REG_USER_ID          
+		    , UPD_DATE             
+		    , UPD_USER_ID          
+		    , FILE_SIZE_CONTRACTION
+			, WRITING_NO		
+	</sql>
+	
+	<!-- 단일 첨부파일 조회  -->
+	<select id="selectAttach" resultType="AttachVO" parameterType="AttachVO">
+		/* com.teamtodev.attachfile.mapper.AttachMapper.selectAttach */
+		SELECT 
+		      ATCH_FILE_NO          /* 통합첨부파일번호 */
+		    , ATCH_FILE_SEQ         /* 첨부파일순번 */
+		    , BIZ_TYPE              /* 업무구분(COMMON_CODE : CMMN_CODE_GROPNM = 업무구분 */
+		    , FILE_PATH             /* 파일경로 */
+		    , FILE_NM               /* 파일명 */
+		    , SAVE_FILE_NM          /* 저장파일명 */
+		    , FILE_CONT_TYPE        /* 파일유형 */
+		    , FILE_SIZE             /* 파일크기 */
+		    , FILE_DOWN_CNT         /* 다운횟수 */
+		    , REG_DATE              /* 등록일자 */
+		    , REG_USER_ID           /* 등록자ID */
+		    , UPD_DATE              /* 수정일자 */
+		    , UPD_USER_ID           /* 수정자ID */
+		    , FILE_SIZE_CONTRACTION /* 파일크기(축약형) 임시컬럼 */
+			, WRITING_NO				/* 글번호 */		    
+		FROM TB_ATTACH_FILE
+		WHERE 1=1
+			AND ATCH_FILE_NO = #{atchFileNo}
+			AND ATCH_FILE_SEQ = #{atchFileSeq}
+	</select>
+	
+</mapper>

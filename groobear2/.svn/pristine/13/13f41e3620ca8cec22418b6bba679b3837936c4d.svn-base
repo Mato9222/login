@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.sanction.mapper.SanctionMapper">
+	
+	<resultMap type="SanctionVO" id="sanctionMap" autoMapping="true">
+		<id property="sanctnNo" column="SANCTN_NO"/>
+	<association property="emplList" javaType="EmployeeVO">
+		<id property="emplNo" column="SANCTN_EMPL_NO"/>
+		<id property="emplNo" column="REAL_SANCTN_EMPL_NO"/>
+        <result property="emplNm" column="SANCTN_EMPL_NM"/>
+        <result property="emplNm" column="REAL_SANCTN_EMPL_NM"/>
+        <result property="ofcpsCodeNm" column="SANCTN_OFCPS_CODE_NM"/>
+        <result property="ofcpsCodeNm" column="REAL_SANCTN_OFCPS_CODE_NM"/>
+        <result property="rspofcCodeNm" column="SANCTN_RSPOFC_CODE_NM"/>
+        <result property="rspofcCodeNm" column="REAL_SANCTN_RSPOFC_CODE_NM"/>
+        <result property="proflPhotoCours" column="SANCTN_PROFL_PHOTO_COURS"/>
+        <result property="proflPhotoCours" column="REAL_SANCTN_PROFL_PHOTO_COURS"/>
+    </association>
+    <association property="commList" javaType="CommonVO">
+    	<id property="cmmnCode" column="SANCTN_STTUS_CODE"/>
+        <result property="cmmnCodeNm" column="SANCTN_STTUS_CODE_NM"/>
+    </association>
+	</resultMap>
+<insert id="insertSanction" parameterType="SanctionVO">
+             INSERT INTO SANCTION (
+                    SANCTN_NO,
+                    SANCTN_DOC_NO,
+                    SANCTN_LINE_NO,
+                    SANCTN_EMPL_NO,
+                    REAL_SANCTN_EMPL_NO,
+                    REAL_SANCTN_CTPNT_URL,
+                    SANCTN_ORDR,
+                    SANCTN_OPINION,
+                    SANCTN_STTUS_CODE,
+                    SANCTN_DE
+                ) VALUES (
+                    TO_NUMBER(TO_CHAR(SYSDATE, 'YYMMDD')) || SANCTION_SEQ.NEXTVAL,
+                    #{sanctnDocNo,jdbcType=VARCHAR},
+                    #{sanctnLineNo,jdbcType=VARCHAR},
+                    #{sanctnEmplNo,jdbcType=NUMERIC},
+                    #{realSanctnEmplNo,jdbcType=NUMERIC},
+                    #{realSanctnCtpntUrl,jdbcType=VARCHAR},
+                    #{sanctnOrdr,jdbcType=NUMERIC},
+                    #{sanctnOpinion,jdbcType=VARCHAR},
+                    'J01',
+                    #{sanctnDe,jdbcType=DATE}
+                )
+    </insert>
+    
+    <select id="scDocSanctionList" parameterType="String" resultMap="sanctionMap">
+SELECT
+    SC.SANCTN_NO,
+    SC.SANCTN_DOC_NO,
+    SC.SANCTN_LINE_NO,
+    SC.SANCTN_EMPL_NO,
+    SC.REAL_SANCTN_EMPL_NO,
+    SC.REAL_SANCTN_CTPNT_URL,
+    SC.SANCTN_ORDR,
+    SC.SANCTN_OPINION,
+    SC.SANCTN_STTUS_CODE,
+    SC.SANCTN_DE,
+    EMPL.EMPL_NM AS SANCTN_EMPL_NM,
+    EMPL.PROFL_PHOTO_COURS AS SANCTN_PROFL_PHOTO_COURS,
+    EMPL2.EMPL_NM AS REAL_SANCTN_EMPL_NM,
+    EMPL2.PROFL_PHOTO_COURS AS REAL_SANCTN_PROFL_PHOTO_COURS,
+    CC1.CMMN_CODE_NM AS SANCTN_OFCPS_CODE_NM,
+    CC2.CMMN_CODE_NM AS SANCTN_RSPOFC_CODE_NM,
+    CC3.CMMN_CODE_NM AS SANCTN_STTUS_CODE_NM
+FROM
+    SANCTION SC
+        LEFT JOIN EMPLOYEES EMPL ON (EMPL.EMPL_NO = SC.SANCTN_EMPL_NO)
+        LEFT JOIN EMPLOYEES EMPL2 ON (EMPL2.EMPL_NO = SC.REAL_SANCTN_EMPL_NO)
+        LEFT JOIN COMMON_CODE CC1 ON (CC1.CMMN_CODE = EMPL.OFCPS_CODE)
+        LEFT JOIN COMMON_CODE CC2 ON (CC2.CMMN_CODE = EMPL.RSPOFC_CODE)
+        LEFT JOIN COMMON_CODE CC3 ON (CC3.CMMN_CODE = SC.SANCTN_STTUS_CODE)
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+		ORDER BY SC.SANCTN_ORDR
+    </select>
+    
+    <update id="updateSanction" parameterType="SanctionVO">
+		UPDATE SANCTION
+		SET
+		    SANCTN_STTUS_CODE = #{sanctnSttusCode,jdbcType=VARCHAR},
+		    REAL_SANCTN_EMPL_NO = #{realSanctnEmplNo,jdbcType=NUMERIC},
+		    REAL_SANCTN_CTPNT_URL = #{realSanctnCtpntUrl,jdbcType=VARCHAR},
+		    SANCTN_OPINION = #{sanctnOpinion,jdbcType=VARCHAR},
+		    SANCTN_DE = #{sanctnDe,jdbcType=DATE}
+		WHERE
+		    SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR} AND
+		    SANCTN_EMPL_NO = #{sanctnEmplNo,jdbcType=NUMERIC} AND
+		    EXISTS (
+		        SELECT 1
+		        FROM SAN_DOCUMENT
+		        WHERE SAN_DOCUMENT.SANCTN_DOC_NO = SANCTION.SANCTN_DOC_NO
+		        AND SAN_DOCUMENT.TMPR_STRE_AT = 'N'
+		    )    
+    </update>
+    
+    <update id="updateReSanction" parameterType="SanctionVO">
+		UPDATE SANCTION
+		    SET
+		        SANCTN_STTUS_CODE = #{sanctnSttusCode,jdbcType=VARCHAR},
+		        REAL_SANCTN_EMPL_NO = #{realSanctnEmplNo,jdbcType=NUMERIC},
+		        REAL_SANCTN_CTPNT_URL = #{realSanctnCtpntUrl,jdbcType=VARCHAR},
+		        SANCTN_OPINION = #{sanctnOpinion,jdbcType=VARCHAR},
+		        SANCTN_DE = #{sanctnDe,jdbcType=DATE}
+		WHERE
+		    SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+    </update>
+    
+    <select id="scDocLastOrdrSanction" parameterType="String" resultType="SanctionVO">
+		SELECT
+		SANCTN_STTUS_CODE
+		FROM SANCTION
+		WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+		  AND SANCTN_ORDR = (
+		    SELECT MAX(SANCTN_ORDR)
+		    FROM SANCTION
+		    WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+		  )  
+    </select>
+    
+    <delete id="deleteSanction" parameterType="String">
+    	DELETE
+    	FROM SANCTION
+    	WHERE SANCTN_DOC_NO = #{sanctnDocNo,jdbcType=VARCHAR}
+    </delete>
+</mapper>

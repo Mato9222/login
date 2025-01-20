@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.main.mapper.MainMapper">
+
+	<select id="receMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		  FROM RECIPIENTS
+		 WHERE EMPL_NO = #{emplNo}
+		  AND DEL_CODE = 'N'
+		  AND READ_TIME IS NULL
+	</select>
+	
+	<select id="tempMailCount" resultType="int" parameterType="int">
+		SELECT COUNT(*)
+		FROM EMAIL 
+		WHERE EMPL_NO = #{emplNo}
+		  AND TMPR_STRE_AT = 'Y'
+	</select>
+
+</mapper>

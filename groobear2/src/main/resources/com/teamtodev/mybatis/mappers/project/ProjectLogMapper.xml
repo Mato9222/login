@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectLogMapper">
+	<insert id="insertLog" parameterType="ProjectLogVO">
+			INSERT INTO PROJECT_LOG (
+					    LOG_NO,
+					    LOG_CLASS,
+					    LOG_STATUS,
+					    LOG_CON_PK
+					) VALUES (
+					    PJ_LOG_SEQ.NEXTVAL,
+					    #{logClass},
+					    #{logStatus},
+					    #{logConPk}
+					)
+	</insert>
+	
+	<select id="selectLogList" resultType="ProjectLogVO" parameterType="String">
+       WITH LOG_INFO AS (
+		    SELECT
+		        A.LOG_NO,
+		        A.LOG_CLASS,
+		        A.LOG_STATUS,
+		        A.LOG_CON_PK,
+		        A.LOG_DATE,
+		        B.WORKS_TITLE,
+		        B.PRJCT_MBR_NO AS WORKS_PRJCT_MBR_NO,
+		        C.SNTNC_SJ,
+		        C.PRJCT_MBR_NO AS POST_PRJCT_MBR_NO
+		    FROM
+		        PROJECT_LOG A
+		        LEFT JOIN WORKS B ON A.LOG_CON_PK = B.WORKS_NO
+		        LEFT JOIN PROJECT_POST C ON A.LOG_CON_PK = C.SNTNC_NO
+		    ORDER BY
+		        A.LOG_NO DESC
+		),
+		PRJ_MEM_VIEW AS (
+		    SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+		    FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+		)
+		SELECT 
+		    INFO.*,
+		    WM.EMPL_NM AS WM_NAME,
+		    PM.EMPL_NM AS PM_NAME,
+		    WM.PRJCT_CODE AS WORKS_PRJCT_CODE,
+		    PM.PRJCT_CODE AS POST_PRJCT_CODE
+		FROM LOG_INFO INFO
+		LEFT JOIN PRJ_MEM_VIEW WM ON INFO.WORKS_PRJCT_MBR_NO = WM.PRJCT_MBR_NO
+		LEFT JOIN PRJ_MEM_VIEW PM ON INFO.POST_PRJCT_MBR_NO = PM.PRJCT_MBR_NO
+		WHERE 
+		    WM.PRJCT_CODE = #{prjctCode} 
+		    OR PM.PRJCT_CODE = #{prjctCode}
+	</select>
+</mapper>

@@ -1,0 +1,341 @@
+    // 결재라인 데이터를 수집하고 폼을 제출하는 함수
+    function submitSanctionLine() {
+        var sanctnLineData = {sclineDetailList:[]};
+	    Swal.fire({
+	    title: '결재라인명',
+	    input: 'text',
+	    inputPlaceholder: '결재라인명 입력',
+	    showCancelButton: true,
+	    confirmButtonText: '등록',
+	    cancelButtonText: '취소',
+	    customClass: {
+	        confirmButton: 'btn btn-primary',
+	        cancelButton: 'btn btn-active-light'
+	    },
+        preConfirm: (inputValue) => {
+            if (!inputValue) {
+                Swal.showValidationMessage('결재선명을 입력해주세요.');
+            }
+            return inputValue;
+        }
+	}).then((Result) => {
+		if (Result.isConfirmed) {
+        // 라인 상세 설정
+	        $('#selectedEmployees li').each(function(index, item) {
+	            var emplId = $(item).attr('id');
+	            sanctnLineData.sclineDetailList.push({
+	               sanctnOrdr: index + 1, 
+	               sanctnEmplNo: emplId
+	            });
+	        });
+			const sanctnLnNm = Result.value;
+        	sanctnLineData.sanctnLnNm = sanctnLnNm;   // 라인이름 설정
+	        $.ajax({
+	           url: '/scline',
+	           method: 'POST',
+	           contentType : 'application/json',
+	           data : JSON.stringify(sanctnLineData),
+	           success: function(data){
+	              
+	            Swal.fire({
+	                 text: "결재라인이 등록되었습니다.",
+	                 icon: "success",
+	                 buttonsStyling: false,
+	                 confirmButtonText: "확인",
+	                 customClass: {
+	                     confirmButton: "btn btn-primary"
+	                 }
+	            })
+	              loadSanctionLineList();
+	              resetSelectedEmployees();
+	              
+	              
+	           },
+	            error: function(xhr, status, error) {
+	                console.error('에러:', status, error); // Debug log
+	            }   
+	        })
+		}
+	})
+
+//        var sanctnLnNm = $('#sanctnLnNm').val();
+//        sanctnLineData.sanctnLnNm = sanctnLnNm;   // 라인이름 설정
+        
+//        console.log("body",sanctnLineData)
+        
+   }
+
+       function createSclineItems(data) {
+           var $sclineList = $('#sclineList');
+           $sclineList.empty(); // 리스트 초기화
+   
+           var seen = new Set();
+           var uniqueData = [];
+           
+           $.each(data, function(index, scline) {
+               if (!seen.has(scline.sanctnLnNm)) {
+                   seen.add(scline.sanctnLnNm);
+                   uniqueData.push(scline);
+               }
+           });
+           
+           // 결재라인 데이터를 반복하여 리스트 아이템 생성
+           $.each(uniqueData, function(index, scline) {
+               var $listItem = $('<li>').addClass('list-group-item d-flex justify-content-between align-items-center text-center mb-2');
+               var $link = $('<a>').attr('href', '#').text(scline.sanctnLnNm);
+               var $button = $('<button>').addClass('btn btn-danger btn-sm').text('X');
+               
+               $listItem.append($link);
+               $listItem.append($button);
+               $sclineList.append($listItem);
+   
+               // 링크 클릭 시 이벤트 핸들러 설정
+               $link.on('click', function() {
+                   // 클릭된 결재라인의 세부 정보 표시
+                   showSclineDetail(scline.sanctnLineNo);
+               });
+               
+               $button.on('click', function() {
+                   // 클릭된 결재라인 삭제
+                   deleteScline(scline.sanctnLineNo);
+                   // 삭제된 결재라인 항목을 화면에서 제거
+                   $listItem.remove();
+               });
+           });
+       }
+
+    function loadSanctionLineList() {
+        $.ajax({
+            url: '/scline',
+            method: 'GET',
+            success: function(data) {
+                createSclineItems(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }
+        });
+    }
+
+    function deleteScline(data){
+        $.ajax({
+           url: '/scline',
+           type: 'DELETE',
+           contentType : 'application/json', 
+           data : JSON.stringify(data),
+           success : function(resp){
+            Swal.fire({
+                 text: "결재라인이 삭제되었습니다.",
+                 icon: "success",
+                 buttonsStyling: false,
+                 confirmButtonText: "확인",
+                 customClass: {
+                     confirmButton: "btn btn-primary"
+                 }
+            })
+           },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }   
+        })
+    }
+    function resetSelectedEmployees() {
+        $('#selectedEmployees').empty(); // 선택된 직원 목록 초기화
+        nextIndex = 1; // 다음 직원 인덱스 초기화
+    }
+
+    function showSclineDetail(scline) {
+        $.ajax({
+            url: '/scline/detail',
+            type: 'GET',
+            data: {sclineNo: scline},
+            success: function(resp) {
+                resetSelectedEmployees();
+                const list = resp[0].sclineDetailList;
+                list.forEach(function(e) {
+                    addEmployeeToList(e.sanctnEmplNo, e.emplNm + " (" + e.ofcpsCode + ", " + e.rspofcCode + ")");
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }
+        });
+    }
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadSanctionLineList();
+
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js';
+    script.onload = function() {
+        $.ajax({
+            url: '/dept/tree',
+            method: 'GET',
+            success: function(data) {
+                $("#kt_docs_jstree_contextual").jstree({
+                    "core" : {
+                        "themes" : {
+                            "responsive": false
+                        },  
+                        "check_callback" : true,
+                        'data': data,
+                    },
+                    'search': {
+                        'show_only_matches': true
+                    },
+                    "types" : {
+                        "default" : {
+                            "icon" : "ki-solid ki-folder text-primary"
+                        },
+                        "file" : {
+                            "icon" : "ki-solid ki-file text-primary"
+                        }
+                    },
+                    "plugins" : [ "contextmenu", "search", "types" ]
+                })
+                $('#kt_docs_jstree_contextual').on('select_node.jstree', function (e, data) {
+                    var node = data.node;
+                    if (node.original && node.original.type === 'employee') {
+                        var emplName = node.text;
+                        var emplId = node.id;
+                        addEmployeeToList(emplId, emplName);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }
+        });
+    }
+    document.body.appendChild(script);
+
+    function fSch() {
+        $('#employee').jstree(true).search($("#schName").val());
+    }
+    
+    function resetSelectedEmployees() {
+        $('#selectedEmployees').empty(); // 선택된 직원 목록 초기화
+        nextIndex = 1; // 다음 직원 인덱스 초기화
+    }
+    $('#closeBtn').on('click', function () {
+        resetSelectedEmployees();
+    });
+    
+    function loadSanctionLineList() {
+        $.ajax({
+            url: '/scline',
+            method: 'GET',
+            success: function(data) {
+                createSclineItems(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }
+        });
+    }
+
+    function createSclineItems(data) {
+        var $sclineList = $('#sclineList');
+        $sclineList.empty(); // 리스트 초기화
+
+        var seen = new Set();
+        var uniqueData = [];
+        
+        $.each(data, function(index, scline) {
+            if (!seen.has(scline.sanctnLnNm)) {
+                seen.add(scline.sanctnLnNm);
+                uniqueData.push(scline);
+            }
+        });
+        
+        // 결재라인 데이터를 반복하여 리스트 아이템 생성
+        $.each(uniqueData, function(index, scline) {
+            var $listItem = $('<li>').addClass('list-group-item d-flex justify-content-between align-items-center text-center mb-2');
+            var $link = $('<a>').attr('href', '#').text(scline.sanctnLnNm);
+            var $button = $('<button>').addClass('btn btn-light-danger btn-sm').attr('id', 'kt_docs_sweetalert_html').text('X');
+            
+            $listItem.append($link);
+            $listItem.append($button);
+            $sclineList.append($listItem);
+
+            // 링크 클릭 시 이벤트 핸들러 설정
+            $link.on('click', function() {
+                // 클릭된 결재라인의 세부 정보 표시
+                showSclineDetail(scline.sanctnLineNo);
+            });
+            
+            $button.on('click', function() {
+                // 클릭된 결재라인 삭제
+                deleteScline(scline.sanctnLineNo);
+                // 삭제된 결재라인 항목을 화면에서 제거
+                $listItem.remove();
+            });
+        });
+    }
+
+    var nextIndex = 1;
+
+    // 선택된 직원을 추가하는 함수
+    function addEmployeeToList(emplId, emplName) {
+        var emplIndex = $('<span>').addClass('empl-index').text("[" + nextIndex + "] ");
+        var emplInfo = $('<span>').text(emplName);
+        var listItem = $('<li>').attr('id', emplId).addClass('list-group-item w-100');
+        var upButton = $('<button>').addClass('btn btn-light-primary btn-sm ms-2').html('↑');
+        var downButton = $('<button>').addClass('btn btn-light-primary btn-sm ms-2').html('↓');
+        var deleteButton = $('<button>').addClass('btn btn-light-danger btn-sm ms-2').html('X');
+
+        upButton.click(function() {
+            var prevItem = $(this).parent().prev();
+            if (prevItem.length !== 0) {
+                $(this).parent().insertBefore(prevItem);
+                resetIndexes();
+            }
+        });
+        downButton.click(function() {
+            var nextItem = $(this).parent().next();
+            if (nextItem.length !== 0) {
+                $(this).parent().insertAfter(nextItem);
+                resetIndexes();
+            }
+        });
+        deleteButton.click(function() {
+            $(this).parent().remove();
+            resetIndexes();
+        });
+
+        listItem.append(emplIndex);
+        listItem.append(emplInfo);
+        listItem.append(upButton);
+        listItem.append(downButton);
+        listItem.append(deleteButton);
+
+        $('#selectedEmployees').append(listItem);
+        nextIndex++;
+        resetIndexes();
+    }
+
+    // 결재순번을 재설정하는 함수
+    function resetIndexes() {
+        $('#selectedEmployees .empl-index').each(function(index) {
+            $(this).text("[" + (index + 1) + "] ");
+        });
+    }
+
+    function showSclineDetail(scline) {
+        $.ajax({
+            url: '/scline/detail',
+            type: 'GET',
+            data: {sclineNo: scline},
+            success: function(resp) {
+                resetSelectedEmployees();
+                const list = resp[0].sclineDetailList;
+                list.forEach(function(e) {
+                    addEmployeeToList(e.sanctnEmplNo, e.emplNm + " (" + e.ofcpsCode + ", " + e.rspofcCode + ")");
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('에러:', status, error); // Debug log
+            }
+        });
+    }
+});

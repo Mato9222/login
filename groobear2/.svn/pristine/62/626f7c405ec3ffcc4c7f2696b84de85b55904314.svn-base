@@ -1,0 +1,68 @@
+$("#kt_account_profile_details_submit").on("click", function(e){
+	let phoneValue = $("input[name = phone]").val();
+	let emailValue = $("input[name = email]").val();
+	let bassAdresValue = $("input[name = bassAdres]").val();
+	let detailAdresValue = $("input[name = detailAdres]").val();
+	let emgncContactNtwkNoValue = $("input[name = emgncContactNtwkNo]").val();
+	
+//	let imageWrapper = $('.image-input-wrapper');
+//    let backgroundImage = imageWrapper.css('background-image');
+//    let imageUrl = backgroundImage.slice(38, -2);
+	
+//	let data = {
+//		proflPhotoCours : imageUrl
+//		, moblphonNo : phoneValue
+//		, emailAdres : emailValue
+//		, bassAdres : bassAdresValue
+//		, detailAdres : detailAdresValue
+//		, emgncContactNtwkNo : emgncContactNtwkNoValue
+//	};
+	
+//	console.log("data : ", data);
+	let formData = new FormData();	// enctype : 자동으로 "multipart/form-data" 
+	formData.append("multipartFile", fileInput.files[0]);	// 1개인 경우
+	formData.append("moblphonNo", phoneValue);
+	formData.append("emailAdres", emailValue);
+	formData.append("bassAdres", bassAdresValue);
+	formData.append("detailAdres", detailAdresValue);
+	formData.append("emgncContactNtwkNo", emgncContactNtwkNoValue);
+	
+	$.ajax({
+		method : "post"
+		, url : "/mypage/settings"
+		, contentType : false
+		, processData : false
+		, cache : false
+		, data : formData
+//		, dataType : "text"
+		, success : function(valueData){
+//			console.log("valueData : ", valueData);
+			if (valueData == "success") {
+			    swal.fire({
+			        text: "변경 완료."
+					, icon: "success"
+					, buttonsStyling: false
+					, confirmButtonText: "확인"
+					, customClass: {
+			            confirmButton: "btn fw-bold btn-light-primary"
+			        }
+			    }).then((result) => {
+			        if (result.isConfirmed) {
+			            location.href = "/mypage";
+			        }
+			    });
+			}
+			else{
+//				swal.fire({
+//                    text: "변경 실패."
+//					, icon: "error"
+//					, buttonsStyling: false
+//					, confirmButtonText: "확인"
+//					, customClass: {
+//                        confirmButton: "btn fw-bold btn-light-primary"
+//                    }
+//                });
+			}
+		}
+	})
+})

@@ -1,0 +1,18 @@
+package com.teamtodev.project.mapper;
+
+import java.util.List;
+
+import com.teamtodev.project.vo.ProjectPostVO;
+
+public interface ProjectPostMapper {
+	
+	public Integer insertProjectPost(ProjectPostVO pjPostVO);
+	
+	public int updateProjectPost(ProjectPostVO pjPostVO);
+	
+	public List<ProjectPostVO> selectProjectPostList();
+	
+	public ProjectPostVO selectProjectPost(int pjPostNo);
+	
+	public int deleteProjectPost(ProjectPostVO pjPostVO);
+}

@@ -1,0 +1,17 @@
+package com.teamtodev.project.mapper;
+
+import java.util.List;
+
+import com.teamtodev.project.vo.ProjectWorkVO;
+
+public interface ProjectWorkMapper {
+	public Integer insertProjectWork(ProjectWorkVO pjWorkVO);
+	
+	public int updateProjectWork(ProjectWorkVO pjWorkVO);
+	
+	public List<ProjectWorkVO> selectProjectWorkList();
+	
+	public ProjectWorkVO selectProjectWork(int pjWorkNo);
+	
+	public int deleteProjectWork(ProjectWorkVO pjWorkVO);
+}

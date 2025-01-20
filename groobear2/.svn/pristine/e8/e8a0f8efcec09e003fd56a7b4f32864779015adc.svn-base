@@ -1,0 +1,29 @@
+//package com.teamtodev.chatroom.service;
+//
+//import java.time.LocalDateTime;
+//
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.stereotype.Service;
+//
+//import com.teamtodev.chatroom.mapper.ChatRoomMapper;
+//import com.teamtodev.chatroom.vo.ChatRoomVO;
+//
+//@Service
+//public class ChatRoomService {
+//    
+//    // ChatRoomMapper 빈을 주입받기 위해 @Autowired 애너테이션을 사용합니다.
+//    @Autowired
+//    ChatRoomMapper chatRoomMapper;
+//    
+//    // 새로운 채팅 방을 데이터베이스에 삽입하는 메서드입니다.
+//    public void insert(ChatRoomVO param) {
+//        // Date now = Date.valueOf(LocalDate.now()); // 현재 시간 (Date 타입)
+//        // Timestamp now = Timestamp.valueOf(LocalDateTime.now()); // 현재 시간 (Timestamp 타입, 시, 분, 초 추가)
+//        
+//        // ChatRoomVO 엔티티의 wdate 필드에 현재 시간을 저장합니다.
+//        param.setWdate(LocalDateTime.now());
+//        
+//        // ChatRoomMapper를 사용하여 ChatRoomVO 엔티티를 데이터베이스에 저장합니다.
+//        chatRoomMapper.save(param);
+//    }
+//}

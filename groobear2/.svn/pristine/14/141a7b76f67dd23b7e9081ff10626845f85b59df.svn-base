@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectWorkMapper">
+	<resultMap type="ProjectWorkVO" id="workMap" autoMapping="true">
+		<id property="worksNo" column="WORKS_NO"/>
+		<collection property="attchFileList" javaType="java.util.List" ofType="AttachVO" autoMapping="true" />
+	</resultMap>
+	
+	<insert id="insertProjectWork" parameterType="ProjectWorkVO">
+		<selectKey order="BEFORE" resultType="int" keyProperty="worksNo">
+			SELECT LPAD(WORK_SEQ.NEXTVAL,8,'0')
+        	FROM DUAL
+		</selectKey>
+		INSERT INTO WORKS (
+		    WORKS_NO,
+		    UP_WORKS_NO,
+		    WORKS_TITLE,
+		    WORKS_CON,
+		    PRJCT_MBR_NO,
+		    PRJCT_MBR_NO2,
+		    WORK_STTUS_CODE,
+		    BGNDE,
+		    CLOS_ON,
+		    WORKS_ORD,
+		    ATCH_FILE_NO,
+		    PROGRS_RT
+		) 
+		VALUES (
+		    #{worksNo},
+		    #{upWorksNo},
+		    #{worksTitle},
+		    #{worksCon},
+		    #{prjctMbrNo},
+		    #{prjctMbrNo2},
+		    'G03',
+		    #{bgnde},
+		    #{closOn},
+		    #{worksOrd},
+		    #{atchFileNo},
+		    0
+		)
+	</insert>
+	<select id="selectProjectWorkList" resultType="ProjectWorkVO" parameterType="String">
+    WITH PRJ_MEM_VIEW AS (
+    SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+    FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+)
+SELECT 
+    W.PRJCT_MBR_NO, 
+    V1.EMPL_NM AS EMPL_NM1, 
+    W.PRJCT_MBR_NO2, 
+    (SELECT EMPL_NM FROM PRJ_MEM_VIEW V2 WHERE W.PRJCT_MBR_NO2 = V2.PRJCT_MBR_NO) AS EMPL_NM2, 
+    W.*, 
+    V1.PRJCT_CODE 
+FROM 
+    WORKS W 
+INNER JOIN 
+    PRJ_MEM_VIEW V1 ON (W.PRJCT_MBR_NO = V1.PRJCT_MBR_NO) 
+WHERE 
+    V1.PRJCT_CODE = #{prjctCode}
+    AND W.WORK_DEL = 'N' 
+ORDER BY 
+    WORKS_NO DESC
+	</select>
+	<select id="selectProjectWork" resultType="ProjectWorkVO" parameterType="ProjectWorkVO">
+		WITH PRJ_MEM_VIEW AS (
+			SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM
+			FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+			)
+			SELECT W.PRJCT_MBR_NO, V1.EMPL_NM AS EMPL_NM1, W.PRJCT_MBR_NO2,
+			(SELECT EMPL_NM FROM PRJ_MEM_VIEW  V2 WHERE W.PRJCT_MBR_NO2 = V2.PRJCT_MBR_NO)
+			AS EMPL_NM2, W.*
+			FROM WORKS W INNER JOIN PRJ_MEM_VIEW V1 ON (W.PRJCT_MBR_NO = V1.PRJCT_MBR_NO)
+			WHERE W.WORKS_NO = #{worksNo} AND WORK_DEL = 'N'
+	</select>
+	<update id="updateProjectWork" parameterType="ProjectWorkVO">
+			UPDATE WORKS
+			    SET
+					    MODIDE = SYSDATE,
+					    BGNDE = #{bgnde},
+					    CLOS_ON = #{closOn},
+					    PROGRS_RT =#{progrsRt},
+					    WORK_STTUS_CODE = #{workSttusCode}
+		WHERE
+	   					 WORKS_NO = #{worksNo}
+	</update>
+	
+	<update id="deleteProjectWork" parameterType="int">
+		UPDATE WORKS
+		       SET 
+		       			WORK_DEL = 'Y'
+		    WHERE WORKS_NO = #{worksNo}
+	</update>
+	<select id="selectProjectWorkStatusCount" resultType="int" parameterType="ProjectWorkVO">
+	    SELECT
+			    COUNT(*)
+		   FROM
+			    WORKS A, PROJECT_MEMBER B
+		WHERE A.PRJCT_MBR_NO = B.PRJCT_MBR_NO
+			 AND B.PRJCT_CODE = #{prjctCode}
+			 AND A.WORK_STTUS_CODE = #{workSttusCode}
+	</select>
+	<select id="selectIndexWorkList" resultType="ProjectWorkVO" parameterType="int">
+		WITH PRJ_MEM_VIEW AS (
+		    SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+		    FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+		    WHERE EMPL_NO = #{emplNo}
+		), PROJECT_VIEW AS
+				(SELECT 
+				    V1.EMPL_NM AS EMPL_NM1, 
+				    (SELECT EMPL_NM FROM PRJ_MEM_VIEW V2 WHERE W.PRJCT_MBR_NO2 = V2.PRJCT_MBR_NO) AS EMPL_NM2, 
+				    W.*, 
+				    V1.PRJCT_CODE 
+				FROM 
+				    WORKS W 
+				LEFT OUTER JOIN 
+				    PRJ_MEM_VIEW V1 ON (W.PRJCT_MBR_NO = V1.PRJCT_MBR_NO) 
+				WHERE 
+				    W.WORK_DEL = 'N'
+				ORDER BY 
+				    WORKS_NO DESC)
+SELECT  PV.EMPL_NM2,
+        PV.WORKS_TITLE,
+        PV.BGNDE,
+        PV.CLOS_ON,
+        PV.PRJCT_CODE,
+        PV.WORK_STTUS_CODE,
+        PROJECT.PRJCT_NM
+  FROM PROJECT_VIEW PV
+  LEFT JOIN PROJECT ON(PV.PRJCT_CODE = PROJECT.PRJCT_CODE)
+WHERE  PV.EMPL_NM2 IS NOT NULL
+     AND PV.WORK_STTUS_CODE != 'G02'
+	</select>
+	<select id="selectIndexDetailWorkAllCount" resultType="int" parameterType="ProjectWorkVO">
+		WITH PRJCT_MNO_VIEW AS
+		(SELECT B.PRJCT_MBR_NO AS MBR_NO
+		  FROM EMPLOYEES A, PROJECT_MEMBER B
+		  WHERE A.EMPL_NM = #{emplNm2}
+		    AND A.EMPL_NO = B.EMPL_NO
+		    AND B.PRJCT_CODE = #{prjctCode})
+		SELECT COUNT(*)
+		  FROM WORKS W
+		  INNER JOIN PRJCT_MNO_VIEW PV ON W.PRJCT_MBR_NO2 = PV.MBR_NO
+	</select>
+	<select id="selectIndexDetailWorkCountG02" resultType="int" parameterType="ProjectWorkVO">
+		WITH PRJCT_MNO_VIEW AS
+		(SELECT B.PRJCT_MBR_NO AS MBR_NO
+		  FROM EMPLOYEES A, PROJECT_MEMBER B
+		  WHERE A.EMPL_NM = #{emplNm2}
+		    AND A.EMPL_NO = B.EMPL_NO
+		    AND B.PRJCT_CODE = #{prjctCode})
+		SELECT COUNT(*)
+		  FROM WORKS W
+		  INNER JOIN PRJCT_MNO_VIEW PV ON W.PRJCT_MBR_NO2 = PV.MBR_NO
+		  WHERE W.WORK_STTUS_CODE = 'G02'
+	</select>
+</mapper>

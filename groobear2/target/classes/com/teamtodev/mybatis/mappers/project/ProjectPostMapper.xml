@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectPostMapper">
+	<resultMap type="ProjectPostVO" id="PostMap" autoMapping="true">
+		<id property="sntncNo" column="SNTNC_NO" />
+		<association property="pjMemberVO" javaType="ProjectMemberVO" autoMapping="true">
+			<id property="prjctMbrNo" column="PRJCT_MBR_NO"></id>
+		</association>
+	</resultMap>
+	<insert id="insertProjectPost" parameterType="ProjectPostVO">
+		<selectKey order="BEFORE" keyProperty="sntncNo" resultType="int">
+			SELECT LPAD(WORK_SEQ.NEXTVAL,5,'5882') FROM DUAL
+		</selectKey>
+		INSERT INTO PROJECT_POST (
+		    SNTNC_NO,
+		    BBS_NO,
+		    PRJCT_MBR_NO,
+		    SNTNC_SJ,
+		    SNTNC_CN,
+		    WRITNG_DATE,
+		    ATCH_FILE_NO
+		) VALUES (
+		    #{sntncNo},
+		    'BD01',
+		    #{prjctMbrNo},
+		    #{sntncSj},
+		    #{sntncCn},
+		    SYSDATE,
+		    #{atchFileNo}
+		)
+	</insert>
+	<select id="selectProjectPostList" resultType="ProjectPostVO" parameterType="String">
+		SELECT
+			    A.SNTNC_NO,
+			    A.BBS_NO,
+			    A.PRJCT_MBR_NO,
+			    A.SNTNC_SJ,
+			    A.SNTNC_CN,
+			    A.WRITNG_DATE,
+			    A.ATCH_FILE_NO,
+			    C.EMPL_NO,
+			    C.EMPL_NM
+			FROM
+			    PROJECT_POST A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE 
+			      A.PRJCT_MBR_NO = B.PRJCT_MBR_NO
+			  AND B.EMPL_NO = C.EMPL_NO  
+			  AND B.PRJCT_CODE = #{prjctCode}
+			   ORDER BY 
+    			A.SNTNC_NO DESC
+	</select>
+	<select id="selectIndexPostList" resultType="ProjectPostVO" parameterType="int">
+		
+		WITH PRJ_MEM_VIEW AS (
+		    SELECT EMPL_NO, PRJCT_CODE, PRJCT_MBR_NO, EMPL_NM 
+		    FROM PROJECT_MEMBER NATURAL JOIN EMPLOYEES
+		    WHERE EMPL_NO = #{emplNo}
+		), PROJECT_VIEW AS
+		(SELECT 
+		     
+		    PP.*, 
+		    V1.EMPL_NM AS EMPL_NM,
+		    V1.PRJCT_CODE 
+		FROM 
+		    PROJECT_POST PP
+		INNER JOIN PRJ_MEM_VIEW V1 ON (PP.PRJCT_MBR_NO = V1.PRJCT_MBR_NO) 
+		ORDER BY 
+		    PP.SNTNC_NO DESC)
+		SELECT  PV.SNTNC_SJ,
+		        PV.WRITNG_DATE,
+		        PROJECT.PRJCT_NM
+		  FROM PROJECT_VIEW PV
+		  LEFT JOIN PROJECT ON(PV.PRJCT_CODE = PROJECT.PRJCT_CODE)
+	</select>
+	<select id="selectProjectPost" resultType="ProjectPostVO" parameterType="ProjectPostVO">
+		SELECT
+			    A.SNTNC_NO,
+			    A.BBS_NO,
+			    A.PRJCT_MBR_NO,
+			    A.SNTNC_SJ,
+			    A.SNTNC_CN,
+			    A.WRITNG_DATE,
+			    A.ATCH_FILE_NO,
+			    C.EMPL_NM
+			FROM
+			    PROJECT_POST A, PROJECT_MEMBER B, EMPLOYEES C
+			WHERE 
+			      A.PRJCT_MBR_NO = B.PRJCT_MBR_NO
+			  AND B.EMPL_NO = C.EMPL_NO  
+			  AND B.PRJCT_CODE = #{prjctCode}
+			  AND A.SNTNC_NO = #{sntncNo}
+	</select>
+	<update id="updateProjectPost" parameterType="ProjectPostVO">
+			UPDATE PROJECT_POST
+				    SET
+				        SNTNC_SJ = #{sntncSj},
+				        SNTNC_CN = #{sntncCn}
+				WHERE
+				    SNTNC_NO = #{sntncNo}
+	</update>
+	<delete id="deleteProjectPost" parameterType="int">
+		DELETE FROM PROJECT_POST WHERE SNTNC_NO = #{sntncNo}
+	</delete>
+</mapper>

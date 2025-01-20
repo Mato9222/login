@@ -1,0 +1,12 @@
+saveFolder=file:${basedir}/src/main/webapp/resources/image/
+saveFolderSign=file:${basedir}/src/main/webapp/resources/image/sign/
+
+attachFolder=file:\\\\192.168.142.3/groobear/attachFolder/
+
+attachFolderTemp=file:\\\\192.168.142.3/groobear/attachFolderTemp/
+
+refCenterFolder=file:\\\\192.168.142.3/groobear/refCenter/root/
+
+projectfiles = file:\\\\192.168.142.3/groobear/projectfiles/
+
+mailfiles = file:\\\\192.168.142.3/groobear/mail/

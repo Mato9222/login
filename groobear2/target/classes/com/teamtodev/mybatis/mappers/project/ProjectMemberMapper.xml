@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.teamtodev.project.mapper.ProjectMemberMapper">
+	<insert id="insertProjectMember" parameterType="ProjectMemberVO">
+		<selectKey order="BEFORE" resultType="int" keyProperty="prjctMbrNo">
+			SELECT LPAD(PROJECT_MEMBER_SEQ.NEXTVAL, 5, '0') AS FORMATTED_SEQUENCE
+        	FROM DUAL
+		</selectKey>
+		        INSERT INTO PROJECT_MEMBER (
+				    PRJCT_MBR_NO,
+				    EMPL_NO,
+				    PRJCT_CODE,
+				    PRJCT_ROLE_CODE
+				) VALUES (
+				    #{prjctMbrNo},
+				    #{emplNo},
+				    #{prjctCode},
+				    #{prjctRoleCode}
+				)
+	</insert>
+	<select id="selectProjectNumber" resultType="int" parameterType="ProjectMemberVO">
+		SELECT
+			    PRJCT_MBR_NO
+			FROM
+			 PROJECT_MEMBER A, PROJECT B
+			 WHERE
+			 A.PRJCT_CODE = B.PRJCT_CODE
+			 AND EMPL_NO = #{emplNo}
+			 AND A.PRJCT_CODE = #{prjctCode}
+	</select>
+	<select id="selectProjectRoleName" resultType="String" parameterType="ProjectMemberVO">
+		SELECT
+		    PRJCT_ROLE_CODE
+		FROM
+		    PROJECT_MEMBER
+		WHERE
+		    	EMPL_NO  = #{emplNo}
+		    AND 
+		    	PRJCT_CODE = #{prjctCode}
+	</select>
+</mapper>

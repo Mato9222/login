@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teamtodev.attendance.mapper.AttendanceMapper">
+	<resultMap type="AttendanceVO" id="AttendanceResultMap">
+		<id property="dclzNo" column="DCLZ_NO"/>
+		<result property="emplNo" column="EMPL_NO"/>
+		<result property="dclzDe" column="DCLZ_DE"/>
+		<result property="attendDt" column="ATTEND_DT"/>
+		<result property="lvffcDt" column="LVFFC_DT"/>
+		<association property="employeeVo" javaType="EmployeeVO" autoMapping="true" />
+	</resultMap>
+	
+	<insert id="insertAttendance">
+		INSERT INTO ATTENDANCE (
+			EMPL_NO
+		) VALUES (
+			#{emplNo}
+		)
+	</insert>
+	
+	<update id="updateAttendanceAttend" parameterType="long">
+		UPDATE ATTENDANCE SET
+			ATTEND_DT = SYSDATE
+		WHERE
+			DCLZ_NO = #{dclzNo}
+	</update>
+	
+	<update id="updateAttendanceLvffc" parameterType="long">
+		UPDATE ATTENDANCE SET
+			LVFFC_DT = SYSDATE
+		WHERE
+			DCLZ_NO = #{dclzNo}
+	</update>
+	
+	<select id="selectAttendanceList" resultMap="AttendanceResultMap">
+		SELECT
+			DCLZ_NO,
+			EMPL_NO,
+			DCLZ_DE,
+			ATTEND_DT,
+			LVFFC_DT
+		FROM
+			ATTENDANCE
+	</select>
+	
+	<select id="selectAttendance" resultMap="AttendanceResultMap">
+		SELECT
+			ATDC.DCLZ_NO,
+			ATDC.DCLZ_DE,
+			ATDC.ATTEND_DT,
+			ATDC.LVFFC_DT
+		FROM
+			ATTENDANCE ATDC
+			RIGHT JOIN
+			EMPLOYEES EMP ON ATDC.EMPL_NO = EMP.EMPL_NO
+		WHERE
+			ATDC.EMPL_NO = #{emplNo}
+		ORDER BY
+			ATDC.DCLZ_DE DESC
+	</select>
+	
+	<select id="selectAttendanceByDay" resultMap="AttendanceResultMap">
+		SELECT
+			ATDC.DCLZ_NO,
+			ATDC.DCLZ_DE,
+			ATDC.ATTEND_DT,
+			ATDC.LVFFC_DT
+		FROM
+			ATTENDANCE ATDC
+			RIGHT JOIN
+			EMPLOYEES EMP ON ATDC.EMPL_NO = EMP.EMPL_NO
+		WHERE
+			ATDC.EMPL_NO = #{emplNo}
+		AND
+			ATDC.DCLZ_DE = #{dclzDe}
+	</select>
+</mapper>

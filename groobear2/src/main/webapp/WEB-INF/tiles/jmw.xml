@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+
+	<!-- index -->
+	<definition name="index" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/index.jsp"></put-attribute>
+	</definition>
+	<!-- 게시판 -->
+	<definition name="board/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/board/{1}.jsp"></put-attribute>
+	</definition>
+	<!-- 자료실 -->
+	<definition name="referencecenter/*" extends="parent">
+		<put-attribute name="content" value="/WEB-INF/jsp/referencecenter/{1}.jsp"></put-attribute>
+	</definition>
+</tiles-definitions>

@@ -1,0 +1,10 @@
+package com.teamtodev.chatroom.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.teamtodev.chatroom.vo.ChatRoomVO;
+
+@Mapper
+public interface ChatRoomMapper{
+    public ChatRoomVO selectChatRoom(String chatRoomNm);
+}
